@@ -8,6 +8,7 @@ export default function InteractiveMap({
   height = "480px",
   showRadiusRings = true,
   selectedNurseryId = null,
+  onNurserySelect = null,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -141,20 +142,33 @@ export default function InteractiveMap({
           <div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid #e2e8f0;">
             ⭐ Đánh giá: <strong>${n.danhGiaNhaCungCap || 4.9} / 5</strong><br/>
             🚚 Bán kính giao: <strong>${n.banKinhGiaoToiDaKm} km</strong><br/>
-            ${n.khoangCachKm !== undefined ? `📍 Cách bạn: <strong>${n.khoangCachKm} km</strong>` : ""}
+            ${n.khoangCachKm !== undefined && n.khoangCachKm !== null ? `📍 Cách bạn: <strong>${n.khoangCachKm} km</strong>` : ""}
           </div>
         </div>
       `);
 
+      marker.bindTooltip(
+        `🌱 ${n.tenVuonUom} (Giao tối đa ${n.banKinhGiaoToiDaKm} km)`,
+        { direction: "top", offset: [0, -18] }
+      );
+
+      if (onNurserySelect) {
+        marker.on("click", () => {
+          onNurserySelect(n);
+        });
+      }
+
       // Delivery Radius Circle ()
+      // Set interactive: false so clicks pass through seamlessly to map for location picking
       if (showRadiusRings && n.banKinhGiaoToiDaKm) {
         L.circle([n.viDo, n.kinhDo], {
           radius: n.banKinhGiaoToiDaKm * 1000,
           color: isSelected ? "#e11d48" : "#2d6a4f",
           fillColor: isSelected ? "#fda4af" : "#52b788",
-          fillOpacity: 0.08,
-          weight: 1.5,
-          dashArray: "4, 6",
+          fillOpacity: isSelected ? 0.16 : 0.05,
+          weight: isSelected ? 2.5 : 1.2,
+          dashArray: isSelected ? null : "4, 6",
+          interactive: false,
         }).addTo(layer);
       }
     });

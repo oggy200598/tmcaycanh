@@ -348,7 +348,8 @@ tmcaycanh/
 - `HomePage`: Hero banner thực vật sang trọng, bộ chọn tọa độ và đối chiếu thổ nhưỡng vùng miền, danh mục, cây nổi bật và preview bản đồ vườn ươm.
 - `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả. **Đã tích hợp phân trang (Pagination)** 9 sản phẩm/trang với bộ điều hướng số trang và Prev/Next mượt mà, tự động reset trang khi thay đổi bộ lọc.
 - `ProductDetailPage`: Thư viện ảnh đúng loài, bảng thông số sinh trưởng 1-1, đồng hồ đo độ phù hợp khí hậu, chọn vườn ươm gần nhất và danh sách đánh giá.
-- `MapExplorerPage`: Bản đồ tương tác Leaflet sử dụng Esri World Street tiles không dính watermark, hiển thị vòng tròn bán kính phủ sóng, chi tiết kho vườn ươm và ghim vị trí nhận hàng.
+- `MapExplorerPage`: Bản đồ tương tác Leaflet sử dụng Esri World Street tiles không dính watermark, hiển thị trọn vẹn 25 vườn ươm với vòng tròn bán kính phủ sóng giao hàng tối đa (xx km). Lớp vòng tròn bán kính được thiết lập `interactive: false` cho phép sự kiện click chuột xuyên qua hoàn toàn để ghim điểm nhận hàng mượt mà ở bất cứ vị trí nào (ngay cả bên trong vòng tròn), đồng thời hiển thị tooltip tên & bán kính trên marker ghim vườn ươm.
+- Đồng bộ chuẩn hóa dữ liệu trạng thái `trangthai = 'Active'` cho toàn bộ các bảng trong PostgreSQL và áp dụng kiểm tra trạng thái case-insensitive `LOWER(trangthai) = 'active'` trên Backend để đảm bảo dữ liệu luôn trả về chính xác tuyệt đối.
 - `RecommendationsPage`: Hệ thống gợi ý cây cảnh hợp thổ nhưỡng dựa trên bộ lọc khí hậu tương tác (Spatial Matching Engine).
 - `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút.
 - `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước, ảnh kiểm định sức khỏe cây tại vườn, bản đồ Live Tracking GPS, form đánh giá 1-5 sao kèm upload ảnh thực tế.

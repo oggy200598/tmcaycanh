@@ -60,6 +60,7 @@ export default function MapExplorerPage() {
             nurseries={nurseries}
             userLocation={{ lat: currentLocation.lat, lon: currentLocation.lon, name: currentLocation.name }}
             onLocationSelect={handleMapLocationSelect}
+            onNurserySelect={setSelectedNursery}
             selectedNurseryId={selectedNursery?.maVuonUom}
             height="580px"
           />

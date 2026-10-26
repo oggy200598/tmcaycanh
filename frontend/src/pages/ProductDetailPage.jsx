@@ -611,7 +611,7 @@ export default function ProductDetailPage() {
               style={{ flexGrow: 1 }}
               disabled={!selectedNursery || !selectedNursery.trongBanKinhGiao}
             >
-              <ShoppingCart size={18} /> Mua Ngay & Khóa Tồn Kho 15 Phút
+              <ShoppingCart size={18} /> Mua Ngay
             </button>
           </div>
 

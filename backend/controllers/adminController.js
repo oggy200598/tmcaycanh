@@ -18,13 +18,13 @@ async function getDashboardStats(req, res) {
     // 2. Total counts
     const userRes = await pool.query("SELECT COUNT(*) AS total FROM nguoidung");
     const plantRes = await pool.query(
-      "SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = 'Active'",
+      "SELECT COUNT(*) AS total FROM caycanh WHERE LOWER(trangthai) = 'active'",
     );
     const pendingRes = await pool.query(
-      "SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = 'Pending'",
+      "SELECT COUNT(*) AS total FROM caycanh WHERE LOWER(trangthai) = 'pending'",
     );
     const nurseryRes = await pool.query(
-      "SELECT COUNT(*) AS total FROM vuonuom WHERE trangthai = 'Active'",
+      "SELECT COUNT(*) AS total FROM vuonuom WHERE LOWER(trangthai) = 'active'",
     );
 
     // 3. Low stock alerts ()
@@ -194,7 +194,7 @@ async function getCategories(req, res) {
     const result = await pool.query(`
       SELECT dm.madanhmuc, dm.tendanhmuc, dm.mota, COUNT(c.macay) AS socay
       FROM danhmuc dm
-      LEFT JOIN caycanh c ON dm.madanhmuc = c.madanhmuc AND c.trangthai = 'Active'
+      LEFT JOIN caycanh c ON dm.madanhmuc = c.madanhmuc AND LOWER(c.trangthai) = 'active'
       GROUP BY dm.madanhmuc, dm.tendanhmuc, dm.mota
       ORDER BY dm.madanhmuc
     `);

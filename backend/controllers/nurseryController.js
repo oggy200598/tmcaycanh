@@ -18,7 +18,7 @@ async function getNurseries(req, res) {
       FROM vuonuom v
       JOIN nhacungcap ncc ON v.manhacungcap = ncc.manhacungcap
       LEFT JOIN tonkho tk ON v.mavuonuom = tk.mavuonuom
-      WHERE v.trangthai = 'Active'
+      WHERE (v.trangthai = 'Active' OR LOWER(v.trangthai) = 'active')
       GROUP BY v.mavuonuom, ncc.tencongty, ncc.diemuytin
     `);
 
