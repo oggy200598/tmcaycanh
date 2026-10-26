@@ -1,8 +1,8 @@
-const { pool } = require('../config/db');
-const gisService = require('../services/gisService');
+const { pool } = require("../config/db");
+const gisService = require("../services/gisService");
 
 /**
- * Get all nurseries with GIS coordinates & distance calculation (BR03, BR07)
+ * Get all nurseries with GIS coordinates & distance calculation
  */
 async function getNurseries(req, res) {
   try {
@@ -30,7 +30,12 @@ async function getNurseries(req, res) {
       let withinRadius = true;
 
       if (userLat && userLon) {
-        distanceKm = gisService.calculateDistance(userLat, userLon, Number(row.vido), Number(row.kinhdo));
+        distanceKm = gisService.calculateDistance(
+          userLat,
+          userLon,
+          Number(row.vido),
+          Number(row.kinhdo),
+        );
         withinRadius = distanceKm <= Number(row.bankinhgiaotoidakm);
       }
 
@@ -63,10 +68,10 @@ async function getNurseries(req, res) {
       data: items,
     });
   } catch (error) {
-    console.error('Get nurseries error:', error);
+    console.error("Get nurseries error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải danh sách vườn ươm.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải danh sách vườn ươm." },
     });
   }
 }
@@ -83,13 +88,13 @@ async function getNurseryById(req, res) {
        FROM vuonuom v
        JOIN nhacungcap ncc ON v.manhacungcap = ncc.manhacungcap
        WHERE v.mavuonuom = $1`,
-      [id]
+      [id],
     );
 
     if (nResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'Không tìm thấy vườn ươm.' },
+        error: { code: "NOT_FOUND", message: "Không tìm thấy vườn ươm." },
       });
     }
 
@@ -103,7 +108,7 @@ async function getNurseryById(req, res) {
        FROM tonkho tk
        JOIN caycanh c ON tk.macay = c.macay
        WHERE tk.mavuonuom = $1`,
-      [id]
+      [id],
     );
 
     res.json({
@@ -136,44 +141,58 @@ async function getNurseryById(req, res) {
           soLuongTamGiu: row.soluongtamgiu,
           tonKhaDung: Number(row.tonkhadung),
           lanCapNhatCuoi: row.lancapnhatcuoi,
-          canhBaoTonThap: row.soluongton <= n.nguongtonkhotoithieu, // BR18
+          canhBaoTonThap: row.soluongton <= n.nguongtonkhotoithieu, //
         })),
       },
     });
   } catch (error) {
-    console.error('Get nursery detail error:', error);
+    console.error("Get nursery detail error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải chi tiết vườn ươm.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải chi tiết vườn ươm." },
     });
   }
 }
 
 /**
- * Create a new Nursery with GIS coordinates (BR03)
+ * Create a new Nursery with GIS coordinates
  */
 async function createNursery(req, res) {
   try {
-    const { tenVuonUom, diaChi, viDo, kinhDo, banKinhGiaoToiDaKm, nguongTonKhoToiThieu, maNhaCungCap } = req.body;
+    const {
+      tenVuonUom,
+      diaChi,
+      viDo,
+      kinhDo,
+      banKinhGiaoToiDaKm,
+      nguongTonKhoToiThieu,
+      maNhaCungCap,
+    } = req.body;
 
     if (!tenVuonUom || !diaChi || viDo === undefined || kinhDo === undefined) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_INPUT', message: 'Bắt buộc khai báo tọa độ (viDo, kinhDo) và địa chỉ vườn (BR03).' },
+        error: {
+          code: "INVALID_INPUT",
+          message: "Bắt buộc khai báo tọa độ (viDo, kinhDo) và địa chỉ vườn .",
+        },
       });
     }
 
     if (viDo < -90 || viDo > 90 || kinhDo < -180 || kinhDo > 180) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_COORDINATES', message: 'Tọa độ GPS không hợp lệ.' },
+        error: {
+          code: "INVALID_COORDINATES",
+          message: "Tọa độ GPS không hợp lệ.",
+        },
       });
     }
 
     // Default or lookup supplier
     let supplierId = maNhaCungCap;
     if (!supplierId) {
-      const s = await pool.query('SELECT manhacungcap FROM nhacungcap LIMIT 1');
+      const s = await pool.query("SELECT manhacungcap FROM nhacungcap LIMIT 1");
       supplierId = s.rows[0].manhacungcap;
     }
 
@@ -191,21 +210,27 @@ async function createNursery(req, res) {
         banKinhGiaoToiDaKm || 30.0,
         nguongTonKhoToiThieu || 5,
         5.0,
-        'Active',
+        "Active",
         supplierId,
-      ]
+      ],
     );
 
     res.status(201).json({
       success: true,
-      data: { maVuonUom, tenVuonUom, viDo, kinhDo, banKinhGiaoToiDaKm: banKinhGiaoToiDaKm || 30.0 },
-      message: 'Thiết lập vườn ươm và tọa độ GIS thành công.',
+      data: {
+        maVuonUom,
+        tenVuonUom,
+        viDo,
+        kinhDo,
+        banKinhGiaoToiDaKm: banKinhGiaoToiDaKm || 30.0,
+      },
+      message: "Thiết lập vườn ươm và tọa độ GIS thành công.",
     });
   } catch (error) {
-    console.error('Create nursery error:', error);
+    console.error("Create nursery error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi khởi tạo vườn ươm.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi khởi tạo vườn ươm." },
     });
   }
 }

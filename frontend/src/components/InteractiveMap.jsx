@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
+import React, { useEffect, useRef } from "react";
+import L from "leaflet";
 
 export default function InteractiveMap({
   nurseries = [],
   userLocation = null,
   onLocationSelect = null,
-  height = '480px',
+  height = "480px",
   showRadiusRings = true,
   selectedNurseryId = null,
 }) {
@@ -26,8 +26,8 @@ export default function InteractiveMap({
       const map = L.map(mapContainerRef.current).setView(initialCenter, 11);
 
       // OpenStreetMap Tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors | TMCayCanh GIS',
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors | TMCayCanh GIS",
         maxZoom: 19,
       }).addTo(map);
 
@@ -36,9 +36,13 @@ export default function InteractiveMap({
 
       // Click to select location
       if (onLocationSelect) {
-        map.on('click', (e) => {
+        map.on("click", (e) => {
           const { lat, lng } = e.latlng;
-          onLocationSelect(lat, lng, `Tọa độ: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          onLocationSelect(
+            lat,
+            lng,
+            `Tọa độ: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+          );
         });
       }
     }
@@ -65,10 +69,10 @@ export default function InteractiveMap({
 
       // Custom Botanical Nursery Marker
       const nurseryIcon = L.divIcon({
-        className: 'custom-nursery-marker',
+        className: "custom-nursery-marker",
         html: `
           <div style="
-            background: ${isSelected ? '#e11d48' : '#1b4332'};
+            background: ${isSelected ? "#e11d48" : "#1b4332"};
             color: #ffffff;
             width: 34px;
             height: 34px;
@@ -88,7 +92,9 @@ export default function InteractiveMap({
         popupAnchor: [0, -17],
       });
 
-      const marker = L.marker([n.viDo, n.kinhDo], { icon: nurseryIcon }).addTo(layer);
+      const marker = L.marker([n.viDo, n.kinhDo], { icon: nurseryIcon }).addTo(
+        layer,
+      );
 
       marker.bindPopup(`
         <div style="font-family: inherit; font-size: 13px; min-width: 180px;">
@@ -97,20 +103,20 @@ export default function InteractiveMap({
           <div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid #e2e8f0;">
             ⭐ Đánh giá: <strong>${n.danhGiaNhaCungCap || 4.9} / 5</strong><br/>
             🚚 Bán kính giao: <strong>${n.banKinhGiaoToiDaKm} km</strong><br/>
-            ${n.khoangCachKm !== undefined ? `📍 Cách bạn: <strong>${n.khoangCachKm} km</strong>` : ''}
+            ${n.khoangCachKm !== undefined ? `📍 Cách bạn: <strong>${n.khoangCachKm} km</strong>` : ""}
           </div>
         </div>
       `);
 
-      // Delivery Radius Circle (BR07)
+      // Delivery Radius Circle ()
       if (showRadiusRings && n.banKinhGiaoToiDaKm) {
         L.circle([n.viDo, n.kinhDo], {
           radius: n.banKinhGiaoToiDaKm * 1000,
-          color: isSelected ? '#e11d48' : '#2d6a4f',
-          fillColor: isSelected ? '#fda4af' : '#52b788',
+          color: isSelected ? "#e11d48" : "#2d6a4f",
+          fillColor: isSelected ? "#fda4af" : "#52b788",
           fillOpacity: 0.08,
           weight: 1.5,
-          dashArray: '4, 6',
+          dashArray: "4, 6",
         }).addTo(layer);
       }
     });
@@ -118,7 +124,7 @@ export default function InteractiveMap({
     // 2. Add User Location Marker
     if (userLocation && userLocation.lat && userLocation.lon) {
       const userIcon = L.divIcon({
-        className: 'custom-user-marker',
+        className: "custom-user-marker",
         html: `
           <div style="
             background: #2563eb;
@@ -149,14 +155,14 @@ export default function InteractiveMap({
       userMarker.bindPopup(`
         <div style="font-size: 13px;">
           <strong>Vị trí nhận hàng của bạn</strong><br/>
-          <span>${userLocation.name || 'Điểm ghim GPS'}</span>
+          <span>${userLocation.name || "Điểm ghim GPS"}</span>
         </div>
       `);
 
       if (onLocationSelect) {
-        userMarker.on('dragend', (e) => {
+        userMarker.on("dragend", (e) => {
           const { lat, lng } = e.target.getLatLng();
-          onLocationSelect(lat, lng, 'Vị trí đã kéo thả trên bản đồ');
+          onLocationSelect(lat, lng, "Vị trí đã kéo thả trên bản đồ");
         });
       }
 
@@ -165,34 +171,53 @@ export default function InteractiveMap({
   }, [nurseries, userLocation, showRadiusRings, selectedNurseryId]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
-      <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height,
+        borderRadius: "var(--radius-lg)",
+        overflow: "hidden",
+        border: "1px solid var(--border-light)",
+      }}
+    >
+      <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
 
       {/* Map Legend Overlay */}
-      <div style={{
-        position: 'absolute',
-        bottom: '12px',
-        right: '12px',
-        zIndex: 500,
-        backgroundColor: 'rgba(255, 255, 255, 0.92)',
-        backdropFilter: 'blur(6px)',
-        padding: '0.4rem 0.75rem',
-        borderRadius: 'var(--radius-md)',
-        fontSize: '0.72rem',
-        boxShadow: 'var(--shadow-md)',
-        border: '1px solid var(--border-light)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '13px' }}>🌱</span> Vườn ươm đối tác
+      <div
+        style={{
+          position: "absolute",
+          bottom: "12px",
+          right: "12px",
+          zIndex: 500,
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+          backdropFilter: "blur(6px)",
+          padding: "0.4rem 0.75rem",
+          borderRadius: "var(--radius-md)",
+          fontSize: "0.72rem",
+          boxShadow: "var(--shadow-md)",
+          border: "1px solid var(--border-light)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{ fontSize: "13px" }}>🌱</span> Vườn ươm đối tác
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '13px' }}>📍</span> Điểm nhận hàng của bạn
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{ fontSize: "13px" }}>📍</span> Điểm nhận hàng của bạn
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '12px', height: '12px', border: '1.5px dashed #2d6a4f', borderRadius: '50%', backgroundColor: 'rgba(82, 183, 136, 0.2)' }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div
+            style={{
+              width: "12px",
+              height: "12px",
+              border: "1.5px dashed #2d6a4f",
+              borderRadius: "50%",
+              backgroundColor: "rgba(82, 183, 136, 0.2)",
+            }}
+          />
           Bán kính giao hàng tối đa (GIS)
         </div>
       </div>

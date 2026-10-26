@@ -113,7 +113,7 @@ export default function Footer() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem', color: '#94a3b8' }}>
               <li>Bảo hành sống khỏe 30 ngày</li>
               <li>Chính sách vận chuyển theo cước GIS</li>
-              <li>Quy chuẩn kiểm duyệt chất lượng BR04</li>
+              <li>Quy chuẩn kiểm duyệt chất lượng </li>
               <li>Điều khoản phân quyền 4 vai trò</li>
             </ul>
           </div>

@@ -1,7 +1,7 @@
-const { pool } = require('../config/db');
+const { pool } = require("../config/db");
 
 /**
- * Get system dashboard statistics and low-stock alerts (BR18)
+ * Get system dashboard statistics and low-stock alerts ()
  */
 async function getDashboardStats(req, res) {
   try {
@@ -16,12 +16,18 @@ async function getDashboardStats(req, res) {
     `);
 
     // 2. Total counts
-    const userRes = await pool.query('SELECT COUNT(*) AS total FROM nguoidung');
-    const plantRes = await pool.query('SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = \'Active\'');
-    const pendingRes = await pool.query('SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = \'Pending\'');
-    const nurseryRes = await pool.query('SELECT COUNT(*) AS total FROM vuonuom WHERE trangthai = \'Active\'');
+    const userRes = await pool.query("SELECT COUNT(*) AS total FROM nguoidung");
+    const plantRes = await pool.query(
+      "SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = 'Active'",
+    );
+    const pendingRes = await pool.query(
+      "SELECT COUNT(*) AS total FROM caycanh WHERE trangthai = 'Pending'",
+    );
+    const nurseryRes = await pool.query(
+      "SELECT COUNT(*) AS total FROM vuonuom WHERE trangthai = 'Active'",
+    );
 
-    // 3. Low stock alerts (BR18)
+    // 3. Low stock alerts ()
     const alertRes = await pool.query(`
       SELECT 
         tk.matonkho, tk.soluongton, tk.soluongtamgiu, v.nguongtonkhotoithieu,
@@ -55,16 +61,16 @@ async function getDashboardStats(req, res) {
       },
     });
   } catch (error) {
-    console.error('Admin stats error:', error);
+    console.error("Admin stats error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải thống kê dashboard.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải thống kê dashboard." },
     });
   }
 }
 
 /**
- * Get GIS Heatmap data for completed orders (BR19)
+ * Get GIS Heatmap data for completed orders ()
  */
 async function getHeatmapData(req, res) {
   try {
@@ -92,10 +98,10 @@ async function getHeatmapData(req, res) {
       })),
     });
   } catch (error) {
-    console.error('Heatmap error:', error);
+    console.error("Heatmap error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải dữ liệu bản đồ nhiệt.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải dữ liệu bản đồ nhiệt." },
     });
   }
 }
@@ -107,7 +113,7 @@ async function getUsers(req, res) {
   try {
     const result = await pool.query(
       `SELECT manguoidung, tendangnhap, email, sodienthoai, hoten, vaitro, daxacthuc, trangthai, ngaytao
-       FROM nguoidung ORDER BY ngaytao DESC`
+       FROM nguoidung ORDER BY ngaytao DESC`,
     );
 
     res.json({
@@ -125,10 +131,10 @@ async function getUsers(req, res) {
       })),
     });
   } catch (error) {
-    console.error('Get users error:', error);
+    console.error("Get users error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải danh sách người dùng.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải danh sách người dùng." },
     });
   }
 }
@@ -141,22 +147,25 @@ async function updateUserStatus(req, res) {
     const { id } = req.params;
     const { trangThai } = req.body;
 
-    if (!['Active', 'Locked'].includes(trangThai)) {
+    if (!["Active", "Locked"].includes(trangThai)) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_STATUS', message: 'Trạng thái chỉ có thể là Active hoặc Locked.' },
+        error: {
+          code: "INVALID_STATUS",
+          message: "Trạng thái chỉ có thể là Active hoặc Locked.",
+        },
       });
     }
 
     const result = await pool.query(
-      'UPDATE nguoidung SET trangthai = $1 WHERE manguoidung = $2 RETURNING manguoidung, hoten, trangthai',
-      [trangThai, id]
+      "UPDATE nguoidung SET trangthai = $1 WHERE manguoidung = $2 RETURNING manguoidung, hoten, trangthai",
+      [trangThai, id],
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'Không tìm thấy người dùng.' },
+        error: { code: "NOT_FOUND", message: "Không tìm thấy người dùng." },
       });
     }
 
@@ -166,10 +175,13 @@ async function updateUserStatus(req, res) {
       message: `Đã cập nhật trạng thái người dùng thành: ${trangThai}.`,
     });
   } catch (error) {
-    console.error('Update user status error:', error);
+    console.error("Update user status error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi cập nhật trạng thái người dùng.' },
+      error: {
+        code: "SERVER_ERROR",
+        message: "Lỗi cập nhật trạng thái người dùng.",
+      },
     });
   }
 }
@@ -197,10 +209,10 @@ async function getCategories(req, res) {
       })),
     });
   } catch (error) {
-    console.error('Get categories error:', error);
+    console.error("Get categories error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải danh mục.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải danh mục." },
     });
   }
 }

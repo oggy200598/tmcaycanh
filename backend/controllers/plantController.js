@@ -1,8 +1,8 @@
-const { pool } = require('../config/db');
-const gisService = require('../services/gisService');
+const { pool } = require("../config/db");
+const gisService = require("../services/gisService");
 
 /**
- * Get plant listing with category, GIS distance, and climate compatibility (BR04, BR06, BR07)
+ * Get plant listing with category, GIS distance, and climate compatibility (, , )
  */
 async function getPlants(req, res) {
   try {
@@ -87,7 +87,7 @@ async function getPlants(req, res) {
 
     const result = await pool.query(query, params);
 
-    // If user coordinates provided, compute GIS distance to nearest nursery and spatial matching (BR06, BR07)
+    // If user coordinates provided, compute GIS distance to nearest nursery and spatial matching (, )
     let nurseries = [];
     if (lat && lon) {
       const nRes = await pool.query(`
@@ -106,11 +106,11 @@ async function getPlants(req, res) {
     const currentClimate = {
       nhietDo: temp ? Number(temp) : 28,
       doAm: humidity ? Number(humidity) : 70,
-      anhSang: sunlight || 'Trong nhà',
+      anhSang: sunlight || "Trong nhà",
     };
 
     let items = result.rows.map((plant) => {
-      // Calculate climate compatibility (BR06)
+      // Calculate climate compatibility ()
       const climateMatch = gisService.calculateClimateCompatibility(
         {
           nhietdotoithieu: plant.nhietdotoithieu,
@@ -119,7 +119,7 @@ async function getPlants(req, res) {
           yeucauanhsang: plant.yeucauanhsang,
           loaidat: plant.loaidat,
         },
-        currentClimate
+        currentClimate,
       );
 
       let nearestNursery = null;
@@ -127,9 +127,16 @@ async function getPlants(req, res) {
       let withinDeliveryRadius = true;
 
       if (userLat && userLon) {
-        const availableNurseries = nurseries.filter((n) => n.macay === plant.macay);
+        const availableNurseries = nurseries.filter(
+          (n) => n.macay === plant.macay,
+        );
         for (const n of availableNurseries) {
-          const dist = gisService.calculateDistance(userLat, userLon, Number(n.vido), Number(n.kinhdo));
+          const dist = gisService.calculateDistance(
+            userLat,
+            userLon,
+            Number(n.vido),
+            Number(n.kinhdo),
+          );
           if (minDistanceKm === null || dist < minDistanceKm) {
             minDistanceKm = dist;
             nearestNursery = {
@@ -143,7 +150,8 @@ async function getPlants(req, res) {
         }
 
         if (nearestNursery) {
-          withinDeliveryRadius = nearestNursery.khoangCachKm <= nearestNursery.banKinhGiaoToiDaKm;
+          withinDeliveryRadius =
+            nearestNursery.khoangCachKm <= nearestNursery.banKinhGiaoToiDaKm;
         }
       }
 
@@ -176,9 +184,12 @@ async function getPlants(req, res) {
       };
     });
 
-    // Spatial filter by radius if radiusKm requested (BR07)
+    // Spatial filter by radius if radiusKm requested ()
     if (userLat && userLon && radiusKm) {
-      items = items.filter((p) => p.khoangCachGanNhatKm !== null && p.khoangCachGanNhatKm <= maxRadius);
+      items = items.filter(
+        (p) =>
+          p.khoangCachGanNhatKm !== null && p.khoangCachGanNhatKm <= maxRadius,
+      );
     }
 
     res.json({
@@ -186,14 +197,15 @@ async function getPlants(req, res) {
       data: items,
       meta: {
         total: items.length,
-        userLocation: userLat && userLon ? { lat: userLat, lon: userLon } : null,
+        userLocation:
+          userLat && userLon ? { lat: userLat, lon: userLon } : null,
       },
     });
   } catch (error) {
-    console.error('Get plants error:', error);
+    console.error("Get plants error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải danh sách cây cảnh.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải danh sách cây cảnh." },
     });
   }
 }
@@ -212,13 +224,16 @@ async function getPlantById(req, res) {
        LEFT JOIN danhmuc dm ON c.madanhmuc = dm.madanhmuc
        LEFT JOIN yeucausinhtruong y ON c.macay = y.macay
        WHERE c.macay = $1`,
-      [id]
+      [id],
     );
 
     if (pResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'Không tìm thấy thông tin cây cảnh.' },
+        error: {
+          code: "NOT_FOUND",
+          message: "Không tìm thấy thông tin cây cảnh.",
+        },
       });
     }
 
@@ -226,8 +241,8 @@ async function getPlantById(req, res) {
 
     // Images
     const imgResult = await pool.query(
-      'SELECT matruyenthong, loaitruyenthong, duongdantaptin, laanhchinh FROM taptintruyenthong WHERE macay = $1 ORDER BY laanhchinh DESC',
-      [id]
+      "SELECT matruyenthong, loaitruyenthong, duongdantaptin, laanhchinh FROM taptintruyenthong WHERE macay = $1 ORDER BY laanhchinh DESC",
+      [id],
     );
 
     // Nurseries stocking this plant
@@ -239,7 +254,7 @@ async function getPlantById(req, res) {
        JOIN vuonuom v ON tk.mavuonuom = v.mavuonuom
        JOIN nhacungcap ncc ON v.manhacungcap = ncc.manhacungcap
        WHERE tk.macay = $1`,
-      [id]
+      [id],
     );
 
     const userLat = lat ? Number(lat) : null;
@@ -251,9 +266,17 @@ async function getPlantById(req, res) {
       let shippingFee = null;
 
       if (userLat && userLon) {
-        distanceKm = gisService.calculateDistance(userLat, userLon, Number(n.vido), Number(n.kinhdo));
+        distanceKm = gisService.calculateDistance(
+          userLat,
+          userLon,
+          Number(n.vido),
+          Number(n.kinhdo),
+        );
         withinRadius = distanceKm <= Number(n.bankinhgiaotoidakm);
-        shippingFee = gisService.calculateShippingFee(distanceKm, Number(plant.khoiluongkg));
+        shippingFee = gisService.calculateShippingFee(
+          distanceKm,
+          Number(plant.khoiluongkg),
+        );
       }
 
       return {
@@ -275,7 +298,7 @@ async function getPlantById(req, res) {
       };
     });
 
-    // Reviews (BR15)
+    // Reviews ()
     const revResult = await pool.query(
       `SELECT dg.madanhgia, dg.sosaodanhgia, dg.binhluan, dg.duongdantruyenthong, dg.ngaytao, u.hoten
        FROM danhgia dg
@@ -284,12 +307,13 @@ async function getPlantById(req, res) {
        JOIN nguoidung u ON dh.manguoidung = u.manguoidung
        WHERE ctdh.macay = $1
        ORDER BY dg.ngaytao DESC`,
-      [id]
+      [id],
     );
 
     const avgStars =
       revResult.rows.length > 0
-        ? revResult.rows.reduce((sum, r) => sum + r.sosaodanhgia, 0) / revResult.rows.length
+        ? revResult.rows.reduce((sum, r) => sum + r.sosaodanhgia, 0) /
+          revResult.rows.length
         : 5.0;
 
     // Climate match
@@ -345,16 +369,16 @@ async function getPlantById(req, res) {
       },
     });
   } catch (error) {
-    console.error('Get plant detail error:', error);
+    console.error("Get plant detail error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tải chi tiết cây cảnh.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tải chi tiết cây cảnh." },
     });
   }
 }
 
 /**
- * Supplier creates a plant (Starts in 'Pending' status awaiting Staff approval BR04, BR05)
+ * Supplier creates a plant (Starts in 'Pending' status awaiting Staff approval , )
  */
 async function createPlant(req, res) {
   const client = await pool.connect();
@@ -377,21 +401,28 @@ async function createPlant(req, res) {
     if (!tenCay || !giaBan || !maDanhMuc || !growthRequirement || !maVuonUom) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_INPUT', message: 'Vui lòng điền đầy đủ thông tin cây và thông số sinh trưởng.' },
+        error: {
+          code: "INVALID_INPUT",
+          message:
+            "Vui lòng điền đầy đủ thông tin cây và thông số sinh trưởng.",
+        },
       });
     }
 
     if (growthRequirement.nhietDoToiThieu >= growthRequirement.nhietDoToiDa) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_GROWTH_PARAMS', message: 'Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa.' },
+        error: {
+          code: "INVALID_GROWTH_PARAMS",
+          message: "Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa.",
+        },
       });
     }
 
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     const maCay = `CAY_${Date.now()}`;
-    const initialStatus = 'Pending'; // BR04
+    const initialStatus = "Pending"; //
 
     await client.query(
       `INSERT INTO caycanh (macay, tencay, tenkhoahoc, motakichthuoc, giaban, mota, huongdanchamsoc, khoiluongkg, trangthai, daxuatban, madanhmuc)
@@ -399,19 +430,19 @@ async function createPlant(req, res) {
       [
         maCay,
         tenCay,
-        tenKhoaHoc || '',
-        moTaKichThuoc || '',
+        tenKhoaHoc || "",
+        moTaKichThuoc || "",
         giaBan,
-        moTa || '',
-        huongDanChamSoc || '',
+        moTa || "",
+        huongDanChamSoc || "",
         khoiLuongKg || 2.0,
         initialStatus,
         false,
         maDanhMuc,
-      ]
+      ],
     );
 
-    // 1-to-1 YeuCauSinhTruong (BR05)
+    // 1-to-1 YeuCauSinhTruong ()
     const maYeuCau = `YC_${Date.now()}`;
     await client.query(
       `INSERT INTO yeucausinhtruong (mayeucau, nhietdotoithieu, nhietdotoida, doamtoiuu, yeucauanhsang, loaidat, macay)
@@ -421,19 +452,20 @@ async function createPlant(req, res) {
         growthRequirement.nhietDoToiThieu,
         growthRequirement.nhietDoToiDa,
         growthRequirement.doAmToiUu || 65,
-        growthRequirement.yeucauAnhSang || 'Bán râm',
-        growthRequirement.loaiDat || 'Đất hữu cơ tơi xốp',
+        growthRequirement.yeucauAnhSang || "Bán râm",
+        growthRequirement.loaiDat || "Đất hữu cơ tơi xốp",
         maCay,
-      ]
+      ],
     );
 
     // Media
     const imgUrl =
-      hinhAnhUrl || 'https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&w=800&q=80';
+      hinhAnhUrl ||
+      "https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&w=800&q=80";
     await client.query(
       `INSERT INTO taptintruyenthong (matruyenthong, loaitruyenthong, duongdantaptin, dungluongbyte, laanhchinh, macay)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [`MED_${Date.now()}`, 'image', imgUrl, 250000, true, maCay]
+      [`MED_${Date.now()}`, "image", imgUrl, 250000, true, maCay],
     );
 
     // Initial Inventory (TonKho)
@@ -441,22 +473,23 @@ async function createPlant(req, res) {
     await client.query(
       `INSERT INTO tonkho (matonkho, soluongton, soluongtamgiu, lancapnhatcuoi, mavuonuom, macay)
        VALUES ($1, $2, $3, NOW(), $4, $5)`,
-      [`TK_${Date.now()}`, initStock, 0, maVuonUom, maCay]
+      [`TK_${Date.now()}`, initStock, 0, maVuonUom, maCay],
     );
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
 
     res.status(201).json({
       success: true,
       data: { maCay, tenCay, trangThai: initialStatus, daXuatBan: false },
-      message: 'Tạo sản phẩm thành công. Sản phẩm đang chờ Staff/Admin phê duyệt (BR04).',
+      message:
+        "Tạo sản phẩm thành công. Sản phẩm đang chờ Staff/Admin phê duyệt.",
     });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Create plant error:', error);
+    await client.query("ROLLBACK");
+    console.error("Create plant error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi tạo cây cảnh mới.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi tạo cây cảnh mới." },
     });
   } finally {
     client.release();
@@ -464,34 +497,35 @@ async function createPlant(req, res) {
 }
 
 /**
- * Staff/Admin approves or rejects plant (BR04)
+ * Staff/Admin approves or rejects plant ()
  */
 async function updatePlantStatus(req, res) {
   try {
     const { id } = req.params;
     const { trangThai, daXuatBan } = req.body;
 
-    if (!['Active', 'Rejected', 'Pending'].includes(trangThai)) {
+    if (!["Active", "Rejected", "Pending"].includes(trangThai)) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_STATUS', message: 'Trạng thái không hợp lệ.' },
+        error: { code: "INVALID_STATUS", message: "Trạng thái không hợp lệ." },
       });
     }
 
-    const isPublished = trangThai === 'Active' ? Boolean(daXuatBan ?? true) : false;
+    const isPublished =
+      trangThai === "Active" ? Boolean(daXuatBan ?? true) : false;
 
     const result = await pool.query(
       `UPDATE caycanh 
        SET trangthai = $1, daxuatban = $2 
        WHERE macay = $3 
        RETURNING macay, tencay, trangthai, daxuatban`,
-      [trangThai, isPublished, id]
+      [trangThai, isPublished, id],
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: { code: 'NOT_FOUND', message: 'Không tìm thấy cây cảnh.' },
+        error: { code: "NOT_FOUND", message: "Không tìm thấy cây cảnh." },
       });
     }
 
@@ -501,10 +535,10 @@ async function updatePlantStatus(req, res) {
       message: `Đã cập nhật trạng thái cây sang ${trangThai}.`,
     });
   } catch (error) {
-    console.error('Update plant status error:', error);
+    console.error("Update plant status error:", error);
     res.status(500).json({
       success: false,
-      error: { code: 'SERVER_ERROR', message: 'Lỗi cập nhật trạng thái cây.' },
+      error: { code: "SERVER_ERROR", message: "Lỗi cập nhật trạng thái cây." },
     });
   }
 }

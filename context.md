@@ -95,25 +95,25 @@ Khi xảy ra lỗi:
 - **BR01 (Quản lý tài khoản & OTP):** Mỗi người dùng chỉ được dùng duy nhất 1 Email/Số điện thoại. Phải xác thực OTP trước khi đặt hàng hoặc đăng bán sản phẩm.
 - **BR02 (Phân quyền 4 vai trò):** `Customer`, `Supplier`, `Staff`, `Admin`. Admin có toàn bộ quyền của Staff và quyền tối cao hệ thống.
 - **BR03 (Vườn ươm & Tọa độ GIS):** Nhà cung cấp bắt buộc phải khai báo tọa độ (`viDo`, `kinhDo`) hợp lệ trước khi tạo sản phẩm hoặc thiết lập tồn kho.
-- **BR04 (Kiểm duyệt cây cảnh):** Cây mới tạo phải ở trạng thái chờ duyệt. Chỉ hiển thị công khai (`daXuatBan = true` và `trangThai = 'Active'`) khi được Staff/Admin phê duyệt.
-- **BR05 (Tham số sinh trưởng):** Cây cảnh bắt buộc có bản ghi 1-1 tại `YeuCauSinhTruong`: `nhietDoToiThieu < nhietDoToiDa`, `doAmToiUu`, `yeuCauAnhSang`, `loaiDat`.
-- **BR06 (Spatial Matching Engine):** Khi khách chọn tọa độ nhận hàng/vị trí trên bản đồ, hệ thống tự động đối chiếu thông số môi trường/khí hậu vùng địa lý với `YeuCauSinhTruong` để tính % tương thích và gán nhãn "Cây hợp thổ nhưỡng".
-- **BR07 (Spatial Radius Query - Bán kính giao):** Khách hàng chỉ được mua sản phẩm từ các Vườn ươm có khoảng cách $\le$ `banKinhGiaoToiDaKm` (thường tối đa 50 km với cây tươi công trình) so với điểm ghim nhận hàng.
-- **BR08 (Tính phí vận chuyển GIS):**
+- ** (Kiểm duyệt cây cảnh):** Cây mới tạo phải ở trạng thái chờ duyệt. Chỉ hiển thị công khai (`daXuatBan = true` và `trangThai = 'Active'`) khi được Staff/Admin phê duyệt.
+- ** (Tham số sinh trưởng):** Cây cảnh bắt buộc có bản ghi 1-1 tại `YeuCauSinhTruong`: `nhietDoToiThieu < nhietDoToiDa`, `doAmToiUu`, `yeuCauAnhSang`, `loaiDat`.
+- ** (Spatial Matching Engine):** Khi khách chọn tọa độ nhận hàng/vị trí trên bản đồ, hệ thống tự động đối chiếu thông số môi trường/khí hậu vùng địa lý với `YeuCauSinhTruong` để tính % tương thích và gán nhãn "Cây hợp thổ nhưỡng".
+- ** (Spatial Radius Query - Bán kính giao):** Khách hàng chỉ được mua sản phẩm từ các Vườn ươm có khoảng cách $\le$ `banKinhGiaoToiDaKm` (thường tối đa 50 km với cây tươi công trình) so với điểm ghim nhận hàng.
+- ** (Tính phí vận chuyển GIS):**
   PhiVanChuyen = KhoangCachKm _ HeSoCuoc _ HeSoKhoiLuong
-- **BR09 (Ghim vị trí nhận hàng):** Đơn hàng bắt buộc phải có tọa độ ghim chính xác (`viDo`, `kinhDo`) trên bản đồ kèm địa chỉ văn bản.
-- **BR10 (Khóa tồn kho tạm giữ - Inventory Lock):** Khi khách tạo đơn hàng, `soLuongTamGiu` tăng lên tương ứng trong vòng **15 phút**. Tồn kho khả dụng = `soLuongTon - soLuongTamGiu`.
-- **BR11 (Tự động hủy đơn quá hạn):** Nếu thanh toán trực tuyến không hoàn tất sau 15 phút, scheduler/cron hủy đơn (`Cancelled`), giải phóng `soLuongTamGiu`.
-- **BR12 (Luồng trạng thái đơn hàng tuyến tính - Không nhảy bước):**
+- ** (Ghim vị trí nhận hàng):** Đơn hàng bắt buộc phải có tọa độ ghim chính xác (`viDo`, `kinhDo`) trên bản đồ kèm địa chỉ văn bản.
+- ** (Khóa tồn kho tạm giữ - Inventory Lock):** Khi khách tạo đơn hàng, `soLuongTamGiu` tăng lên tương ứng trong vòng **15 phút**. Tồn kho khả dụng = `soLuongTon - soLuongTamGiu`.
+- ** (Tự động hủy đơn quá hạn):** Nếu thanh toán trực tuyến không hoàn tất sau 15 phút, scheduler/cron hủy đơn (`Cancelled`), giải phóng `soLuongTamGiu`.
+- ** (Luồng trạng thái đơn hàng tuyến tính - Không nhảy bước):**
   ChoXacNhan -> DaXacNhan -> DangChuanBiHang -> DangGiaHang -> DaHoanThanh
   _(Trạng thái `DaHuy` chỉ hợp lệ khi đơn chưa chuyển sang `DangGiaoHang`)._
-- **BR13 (Xác nhận sức khỏe cây trước khi giao):** Nhân viên/Nhà cung cấp bắt buộc tải lên `anhSucKhoeUrl` chụp thực tế cây tại vườn và đánh dấu `daXacNhanSucKhoe = true` trước khi chuyển sang `DangGiaoHang`.
-- **BR14 (Live Order Tracking):** Vị trí GPS đơn hàng được cập nhật liên tục (chu kỳ 30s) để khách hàng theo dõi trực quan trên bản đồ.
-- **BR15 (Đánh giá sản phẩm):** Chỉ được đánh giá khi đơn hàng ở trạng thái `DaHoanThanh`. Mỗi sản phẩm trong một đơn hàng chỉ được đánh giá 1 lần (1 đến 5 sao).
-- **BR16 (Tính điểm uy tín NCC):** `diemUyTin` của Nhà cung cấp = Trung bình cộng toàn bộ số sao từ các đánh giá thuộc các vườn ươm của NCC đó.
-- **BR17 (Trừ tồn kho chính thức):** Khi đơn hàng chuyển sang `DaHoanThanh`, `soLuongTon` giảm chính thức và `soLuongTamGiu` được giải phóng.
-- **BR18 (Cảnh báo tồn kho tối thiểu):** Khi `soLuongTon <= nguongTonKhoToiThieu`, hệ thống tự kích hoạt thông báo (Email/Push) cho Nhà cung cấp.
-- **BR19 (Bản đồ nhiệt Heatmap GIS):** Dữ liệu phân tích Heatmap đơn hàng chỉ thống kê trên các đơn có trạng thái `DaHoanThanh` trong khoảng thời gian xác định.
+- ** (Xác nhận sức khỏe cây trước khi giao):** Nhân viên/Nhà cung cấp bắt buộc tải lên `anhSucKhoeUrl` chụp thực tế cây tại vườn và đánh dấu `daXacNhanSucKhoe = true` trước khi chuyển sang `DangGiaoHang`.
+- ** (Live Order Tracking):** Vị trí GPS đơn hàng được cập nhật liên tục (chu kỳ 30s) để khách hàng theo dõi trực quan trên bản đồ.
+- ** (Đánh giá sản phẩm):** Chỉ được đánh giá khi đơn hàng ở trạng thái `DaHoanThanh`. Mỗi sản phẩm trong một đơn hàng chỉ được đánh giá 1 lần (1 đến 5 sao).
+- ** (Tính điểm uy tín NCC):** `diemUyTin` của Nhà cung cấp = Trung bình cộng toàn bộ số sao từ các đánh giá thuộc các vườn ươm của NCC đó.
+- ** (Trừ tồn kho chính thức):** Khi đơn hàng chuyển sang `DaHoanThanh`, `soLuongTon` giảm chính thức và `soLuongTamGiu` được giải phóng.
+- ** (Cảnh báo tồn kho tối thiểu):** Khi `soLuongTon <= nguongTonKhoToiThieu`, hệ thống tự kích hoạt thông báo (Email/Push) cho Nhà cung cấp.
+- ** (Bản đồ nhiệt Heatmap GIS):** Dữ liệu phân tích Heatmap đơn hàng chỉ thống kê trên các đơn có trạng thái `DaHoanThanh` trong khoảng thời gian xác định.
 
 ---
 
@@ -269,6 +269,7 @@ tmcaycanh/
 ## 9. TRẠNG THÁI TRIỂN KHAI & KẾT QUẢ KIỂM THỬ (IMPLEMENTATION & VERIFICATION STATUS)
 
 ### 9.1. Trạng thái Kết nối Cơ sở Dữ liệu & Dữ liệu Mẫu (Database & Seeding)
+
 - **Tình trạng kết nối PostgreSQL:** Đã kiểm tra và điều chỉnh `DB_NAME=tmcaycanh` trong `backend/.env` và `.env` gốc để kết nối chính xác với PostgreSQL localhost:5432.
 - **Dữ liệu mẫu (Seed Data):** Đã tạo script `backend/seed.js` và nạp thành công dữ liệu mẫu cho toàn bộ **12/12 bảng**:
   1. `NguoiDung`: 6 tài khoản mẫu (`Admin`, `Staff`, 2 `Supplier`, 2 `Customer`) có mã hóa mật khẩu bcrypt `123456`.
@@ -277,7 +278,7 @@ tmcaycanh/
   4. `DiaChiGiaoHang`: Địa chỉ ghim tọa độ GIS chuẩn tại TP. HCM.
   5. `VuonUom`: 4 vườn ươm với tọa độ thực tế, bán kính phục vụ 35 - 120 km.
   6. `CayCanh`: 8 cây cảnh phong thủy và nội thất kèm ảnh curated chất lượng cao.
-  7. `YeuCauSinhTruong`: Bản ghi 1-1 cho cả 8 cây với dải nhiệt độ, độ ẩm, ánh sáng, loại đất (BR05).
+  7. `YeuCauSinhTruong`: Bản ghi 1-1 cho cả 8 cây với dải nhiệt độ, độ ẩm, ánh sáng, loại đất ().
   8. `TonKho`: 11 bản ghi tồn kho phân bổ theo từng vườn ươm.
   9. `TaptinTruyenThong`: 8 media URLs cho ảnh chính và hình ảnh sinh thái.
   10. `DonHang`: 3 đơn hàng mẫu ở các giai đoạn tuyến tính (`ChoXacNhan` khóa 15p, `DangGiaoHang`, `DaHoanThanh`).
@@ -285,47 +286,49 @@ tmcaycanh/
   12. `DanhGia`: Đánh giá 5 sao kèm nhận xét chất lượng phục vụ và đóng gói.
 
 ### 9.2. Toàn bộ Endpoint RESTful Backend đã hoàn thiện
+
 - **Auth (`/api/auth`):**
-  - `POST /register`: Đăng ký Khách hàng / Nhà cung cấp (BR01).
+  - `POST /register`: Đăng ký Khách hàng / Nhà cung cấp.
   - `POST /login`: Đăng nhập cấp phát JWT Token.
-  - `GET /me`: Lấy thông tin cá nhân và vai trò RBAC (BR02).
-  - `GET /addresses`, `POST /addresses`: Quản lý địa chỉ giao ghim GPS (BR09).
+  - `GET /me`: Lấy thông tin cá nhân và vai trò RBAC.
+  - `GET /addresses`, `POST /addresses`: Quản lý địa chỉ giao ghim GPS ().
 - **Plants (`/api/plants`):**
-  - `GET /`: Lọc cây theo danh mục, giá, ánh sáng, khoảng cách bán kính GIS (BR07) và đối chiếu khí hậu (BR06).
+  - `GET /`: Lọc cây theo danh mục, giá, ánh sáng, khoảng cách bán kính GIS () và đối chiếu khí hậu ().
   - `GET /:id`: Chi tiết cây, tham số sinh trưởng 1-1, đồng hồ đối chiếu thổ nhưỡng, tồn kho từng vườn và đánh giá.
-  - `POST /`: Đăng bán cây mới (trạng thái `Pending` chờ duyệt - BR04, BR05).
-  - `PATCH /:id/status`: Staff/Admin duyệt hoặc từ chối cây cảnh (BR04).
+  - `POST /`: Đăng bán cây mới (trạng thái `Pending` chờ duyệt - , ).
+  - `PATCH /:id/status`: Staff/Admin duyệt hoặc từ chối cây cảnh ().
 - **Nurseries (`/api/nurseries`):**
   - `GET /`: Danh sách vườn ươm, tính khoảng cách từ điểm ghim khách và bán kính phục vụ.
   - `GET /:id`: Chi tiết vườn và toàn bộ kho cây.
   - `POST /`: Nhà cung cấp tạo vườn ươm kèm tọa độ GIS (BR03).
 - **Orders (`/api/orders`):**
-  - `POST /`: Tạo đơn hàng qua ACID Transaction, kiểm tra bán kính giao (BR07), tính cước vận chuyển GIS (BR08), khóa tồn kho `soLuongTamGiu` 15 phút (BR10).
+  - `POST /`: Tạo đơn hàng qua ACID Transaction, kiểm tra bán kính giao (), tính cước vận chuyển GIS (), khóa tồn kho `soLuongTamGiu` 15 phút ().
   - `GET /`, `GET /:id`: Lịch sử và chi tiết đơn hàng.
-  - `PATCH /:id/status`: Chuyển trạng thái tuyến tính (BR12), bắt buộc ảnh sức khỏe (BR13), trừ tồn kho chính thức khi hoàn tất (BR17), giải phóng tồn kho khi hủy (BR11).
-  - `PATCH /:id/health-check`: Tải ảnh chụp thực tế cây tại vườn và xác nhận sức khỏe đạt chuẩn (BR13).
+  - `PATCH /:id/status`: Chuyển trạng thái tuyến tính (), bắt buộc ảnh sức khỏe (), trừ tồn kho chính thức khi hoàn tất (), giải phóng tồn kho khi hủy ().
+  - `PATCH /:id/health-check`: Tải ảnh chụp thực tế cây tại vườn và xác nhận sức khỏe đạt chuẩn ().
 - **Reviews (`/api/reviews`):**
-  - `POST /`: Gửi đánh giá cho đơn hàng `DaHoanThanh` (BR15), tự động tính lại điểm uy tín NCC (BR16).
+  - `POST /`: Gửi đánh giá cho đơn hàng `DaHoanThanh` (), tự động tính lại điểm uy tín NCC ().
 - **Admin & Giám Sát (`/api/admin`):**
-  - `GET /dashboard`: Tổng quan tài chính, đơn hàng, người dùng, cảnh báo tồn kho tối thiểu (BR18).
-  - `GET /heatmap`: Dữ liệu bản đồ nhiệt Heatmap GIS đơn hàng hoàn thành (BR19).
+  - `GET /dashboard`: Tổng quan tài chính, đơn hàng, người dùng, cảnh báo tồn kho tối thiểu ().
+  - `GET /heatmap`: Dữ liệu bản đồ nhiệt Heatmap GIS đơn hàng hoàn thành ().
   - `GET /users`, `PATCH /users/:id/status`: Quản lý và khóa/mở khóa tài khoản.
 
 ### 9.3. Giao diện Frontend (React / Vite / Leaflet) đã hoàn thiện
+
 - `HomePage`: Hero banner thực vật sang trọng, bộ chọn tọa độ và đối chiếu thổ nhưỡng vùng miền, danh mục, cây nổi bật và preview bản đồ vườn ươm.
 - `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả.
 - `ProductDetailPage`: Thư viện ảnh, bảng thông số sinh trưởng 1-1, đồng hồ đo độ phù hợp khí hậu, chọn vườn ươm gần nhất và danh sách đánh giá.
 - `MapExplorerPage`: Bản đồ tương tác Leaflet toàn màn hình, hiển thị vòng tròn bán kính phủ sóng, chi tiết kho vườn ươm và ghim vị trí nhận hàng.
 - `RecommendationsPage`: Hệ thống gợi ý cây cảnh hợp thổ nhưỡng dựa trên bộ lọc khí hậu tương tác (Spatial Matching Engine).
 - `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút.
-- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước (BR12), ảnh kiểm định sức khỏe cây tại vườn (BR13), bản đồ Live Tracking GPS (BR14), form đánh giá 1-5 sao (BR15).
-- `SupplierPortalPage`: Quản lý đơn hàng, tải ảnh sức khỏe cây, cảnh báo tồn kho thấp (BR18), thiết lập vườn ươm GIS (BR03), đăng bán cây mới (BR04, BR05).
-- `AdminPortalPage`: Báo cáo doanh thu, bản đồ nhiệt Heatmap GIS (BR19), kiểm duyệt sản phẩm mới (BR04), quản lý người dùng.
+- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước (), ảnh kiểm định sức khỏe cây tại vườn (), bản đồ Live Tracking GPS (), form đánh giá 1-5 sao ().
+- `SupplierPortalPage`: Quản lý đơn hàng, tải ảnh sức khỏe cây, cảnh báo tồn kho thấp (), thiết lập vườn ươm GIS (BR03), đăng bán cây mới (, ).
+- `AdminPortalPage`: Báo cáo doanh thu, bản đồ nhiệt Heatmap GIS (), kiểm duyệt sản phẩm mới (), quản lý người dùng.
 - `LoginPage` & `RegisterPage`: Đăng nhập/đăng ký có nút đăng nhập nhanh 4 vai trò demo.
 
 ### 9.4. Báo cáo Kết quả Kiểm thử TDD (100% Pass)
-- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn (Kết nối DB, 12 bảng có dữ liệu, quan hệ 1-1 CayCanh - YeuCauSinhTruong, tọa độ vườn ươm, phân quyền RBAC).
-- `backend/test/gis-service.test.js`: 5/5 test cases đạt chuẩn (Công thức khoảng cách Haversine, cước ship BR08, thuật toán tương thích thổ nhưỡng BR06, chu trình tuyến tính BR12/BR13).
-- `backend/test/api-flow.test.js`: 9/9 test cases đạt chuẩn (Healthcheck, JWT Login, truy vấn GIS, tạo đơn khóa tồn kho ACID BR10, ngăn chặn nhảy cóc trạng thái đơn BR12, kiểm tra bắt buộc ảnh sức khỏe BR13, trừ tồn kho chính thức BR17, Heatmap GIS BR19).
-- `Browser Verification`: Đã chạy kiểm thử tự động trên trình duyệt thật qua `browser_subagent` và ghi lại video phiên làm việc hoàn tất tại `tmcaycanh_demo_1793029699740.webp`.
 
+- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn (Kết nối DB, 12 bảng có dữ liệu, quan hệ 1-1 CayCanh - YeuCauSinhTruong, tọa độ vườn ươm, phân quyền RBAC).
+- `backend/test/gis-service.test.js`: 5/5 test cases đạt chuẩn (Công thức khoảng cách Haversine, cước ship , thuật toán tương thích thổ nhưỡng , chu trình tuyến tính /).
+- `backend/test/api-flow.test.js`: 9/9 test cases đạt chuẩn (Healthcheck, JWT Login, truy vấn GIS, tạo đơn khóa tồn kho ACID , ngăn chặn nhảy cóc trạng thái đơn , kiểm tra bắt buộc ảnh sức khỏe , trừ tồn kho chính thức , Heatmap GIS ).
+- `Browser Verification`: Đã chạy kiểm thử tự động trên trình duyệt thật qua `browser_subagent` và ghi lại video phiên làm việc hoàn tất tại `tmcaycanh_demo_1793029699740.webp`.

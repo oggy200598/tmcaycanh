@@ -1,7 +1,7 @@
 /**
  * GIS Spatial Engine & Business Logic Service for TMCayCanh
- * Implements: Haversine distance, shipping calculation (BR08),
- * climate matching engine (BR06), and linear state transition validator (BR12, BR13).
+ * Implements: Haversine distance, shipping calculation (),
+ * climate matching engine (), and linear state transition validator (, ).
  */
 
 const EARTH_RADIUS_KM = 6371;
@@ -23,7 +23,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = EARTH_RADIUS_KM * c;
@@ -32,7 +35,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Calculates shipping fee based on distance (km) and plant weight (kg) (BR08)
+ * Calculates shipping fee based on distance (km) and plant weight (kg) ()
  * Formula: Base fee + (distance * ratePerKm) + (weight * weightFactor)
  * Minimum fee: 20,000 VND
  * @param {number} distanceKm Distance in kilometers
@@ -44,14 +47,15 @@ function calculateShippingFee(distanceKm, weightKg = 2.0) {
   const ratePerKm = 2500;
   const ratePerKg = 1500;
 
-  let fee = baseFee + distanceKm * ratePerKm + Math.max(0, weightKg - 1) * ratePerKg;
+  let fee =
+    baseFee + distanceKm * ratePerKm + Math.max(0, weightKg - 1) * ratePerKg;
   fee = Math.max(20000, fee);
   // Round to nearest 1,000 VND
   return Math.round(fee / 1000) * 1000;
 }
 
 /**
- * Climate and soil matching engine (BR06)
+ * Climate and soil matching engine ()
  * Calculates match score between plant growth requirements and local environment
  * @param {object} requirement { nhietdotoithieu, nhietdotoida, doamtoiuu, yeucauanhsang, loaidat }
  * @param {object} climate { nhietDo, doAm, anhSang, loaiDat }
@@ -64,7 +68,7 @@ function calculateClimateCompatibility(requirement, climate = {}) {
 
   const curTemp = climate.nhietDo !== undefined ? climate.nhietDo : 28; // default VN climate
   const curHumidity = climate.doAm !== undefined ? climate.doAm : 70;
-  const curLight = climate.anhSang || 'Trong nhà';
+  const curLight = climate.anhSang || "Trong nhà";
 
   // 1. Temperature Check (Weight 40%)
   if (curTemp < requirement.nhietdotoithieu) {
@@ -85,17 +89,22 @@ function calculateClimateCompatibility(requirement, climate = {}) {
   if (requirement.yeucauanhsang === curLight) {
     lightScore = 100;
   } else if (
-    (requirement.yeucauanhsang === 'Bán râm' && (curLight === 'Trong nhà' || curLight === 'Toàn phần')) ||
-    (requirement.yeucauanhsang === 'Trong nhà' && curLight === 'Bán râm')
+    (requirement.yeucauanhsang === "Bán râm" &&
+      (curLight === "Trong nhà" || curLight === "Toàn phần")) ||
+    (requirement.yeucauanhsang === "Trong nhà" && curLight === "Bán râm")
   ) {
     lightScore = 70;
   } else {
     lightScore = 30;
   }
 
-  const totalScore = Math.round(tempScore * 0.4 + humidityScore * 0.3 + lightScore * 0.3);
+  const totalScore = Math.round(
+    tempScore * 0.4 + humidityScore * 0.3 + lightScore * 0.3,
+  );
   const isCompatible = totalScore >= 70;
-  const badge = isCompatible ? `${totalScore}% Hợp thổ nhưỡng & khí hậu` : `${totalScore}% Cần che chắn/điều hòa`;
+  const badge = isCompatible
+    ? `${totalScore}% Hợp thổ nhưỡng & khí hậu`
+    : `${totalScore}% Cần che chắn/điều hòa`;
 
   return {
     score: totalScore,
@@ -110,7 +119,7 @@ function calculateClimateCompatibility(requirement, climate = {}) {
 }
 
 /**
- * Checks whether an order state transition is valid according to BR12 & BR13
+ * Checks whether an order state transition is valid according to  &
  * Sequence: ChoXacNhan -> DaXacNhan -> DangChuanBiHang -> DangGiaoHang -> DaHoanThanh
  * Cancellation (DaHuy) is only allowed BEFORE DangGiaoHang.
  * @param {string} currentState Current order status
@@ -119,10 +128,10 @@ function calculateClimateCompatibility(requirement, climate = {}) {
  */
 function isValidOrderTransition(currentState, nextState) {
   const allowedNext = {
-    ChoXacNhan: ['DaXacNhan', 'DaHuy'],
-    DaXacNhan: ['DangChuanBiHang', 'DaHuy'],
-    DangChuanBiHang: ['DangGiaoHang', 'DaHuy'],
-    DangGiaoHang: ['DaHoanThanh'],
+    ChoXacNhan: ["DaXacNhan", "DaHuy"],
+    DaXacNhan: ["DangChuanBiHang", "DaHuy"],
+    DangChuanBiHang: ["DangGiaoHang", "DaHuy"],
+    DangGiaoHang: ["DaHoanThanh"],
     DaHoanThanh: [],
     DaHuy: [],
   };
