@@ -1,0 +1,39 @@
+Giao diện chung
+- Trang chủ
+- đăng ký
+- đăng nhập
+- danh sách sản phẩm
+- chi tiết sản phẩm
+- giỏ hàng
+- đơn hàng
+- chi tiết đơn hàn
+- đánh giá sản phẩm
+- Bản đồ GIS
+- hỗ trợ và khiếu nại
+- tài khoản cá nhân
+- địa chỉ giao hàng
+- theo dõi giao hàng
+- gợi ý cây cảnh
+Giao diện nhà cung cấp
+- Dashboard NCC
+- quản lý vườn
+- quản lý sản phẩm
+- thêm sản phẩm
+- quản lý tồn kho
+- quản lý đơn hàng
+- thông tin nhà cung cấp
+Giao diện admin
+- Dashboard Admin
+- quản lý người dùng
+- phân quyền
+- quản lý NCC
+- quản lý danh mục
+- quản lý sản phẩm
+- quản lý đơn hàng
+- báo cáo doanh thu
+Giao diện NV
+- Dashboard Nhân viên
+- kiểm duyệt sản phẩm
+- Kiểm duyệt vị trí
+- Xử lý đơn hàng
+- Quản lý hỗ trợ

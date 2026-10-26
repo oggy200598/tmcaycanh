@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="ERDDiagram" name="ERD Diagram">
+    <mxGraphModel dx="2000" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- NGUOI DUNG -->
+        <mxCell id="tbl_nguoidung" value="NguoiDung" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="280" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_nguoidung_fields" value="PK  maNguoiDung varchar(50)&#xa;    tenDangNhap varchar(50)&#xa;    matKhauMaHoa varchar(255)&#xa;    email varchar(100)&#xa;    soDienThoai varchar(20)&#xa;    hoTen nvarchar(100)&#xa;    vaiTro varchar(20)&#xa;    daXacThuc bit&#xa;    trangThai varchar(20)&#xa;    ngayTao datetime" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_nguoidung">
+          <mxGeometry y="26" width="280" height="204" as="geometry" />
+        </mxCell>
+
+        <!-- DIA CHI GIAO HANG -->
+        <mxCell id="tbl_diachigiaohang" value="DiaChiGiaoHang" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="520" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_diachigiaohang_fields" value="PK  maDiaChi varchar(50)&#xa;    tenNguoiNhan nvarchar(100)&#xa;    soDienThoaiNguoiNhan varchar(20)&#xa;    diaChiChiTiet nvarchar(255)&#xa;    viDo float&#xa;    kinhDo float&#xa;    macDinh bit&#xa;FK  maNguoiDung varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_diachigiaohang">
+          <mxGeometry y="26" width="280" height="164" as="geometry" />
+        </mxCell>
+
+        <!-- NHA CUNG CAP -->
+        <mxCell id="tbl_nhacungcap" value="NhaCungCap" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="-120" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_nhacungcap_fields" value="PK  maNhaCungCap varchar(50)&#xa;    tenCongTy nvarchar(200)&#xa;    maSoThue varchar(50)&#xa;    soDienThoaiLienHe varchar(20)&#xa;    emailLienHe varchar(100)&#xa;    diemUyTin float" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_nhacungcap">
+          <mxGeometry y="26" width="280" height="134" as="geometry" />
+        </mxCell>
+
+        <!-- VUON UOM -->
+        <mxCell id="tbl_vuonuom" value="VuonUom" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="100" width="280" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_vuonuom_fields" value="PK  maVuonUom varchar(50)&#xa;    tenVuonUom nvarchar(200)&#xa;    diaChi nvarchar(255)&#xa;    viDo float&#xa;    kinhDo float&#xa;    banKinhGiaoToiDaKm float&#xa;    nguongTonKhoToiThieu int&#xa;    danhGiaNhaCungCap float&#xa;    trangThai varchar(20)&#xa;FK  maNhaCungCap varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_vuonuom">
+          <mxGeometry y="26" width="280" height="204" as="geometry" />
+        </mxCell>
+
+        <!-- DANH MUC -->
+        <mxCell id="tbl_danhmuc" value="DanhMuc" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="70" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_danhmuc_fields" value="PK  maDanhMuc varchar(50)&#xa;    tenDanhMuc nvarchar(200)&#xa;    moTa nvarchar(MAX)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_danhmuc">
+          <mxGeometry y="26" width="240" height="74" as="geometry" />
+        </mxCell>
+
+        <!-- CAY CANH -->
+        <mxCell id="tbl_caycanh" value="CayCanh" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="280" width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_caycanh_fields" value="PK  maCay varchar(50)&#xa;    tenCay nvarchar(200)&#xa;    tenKhoaHoc varchar(200)&#xa;    moTaKichThuoc nvarchar(100)&#xa;    giaBan float&#xa;    moTa nvarchar(MAX)&#xa;    huongDanChamSoc nvarchar(MAX)&#xa;    khoiLuongKg float&#xa;    trangThai varchar(20)&#xa;    daXuatBan bit&#xa;FK  maDanhMuc varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_caycanh">
+          <mxGeometry y="26" width="280" height="224" as="geometry" />
+        </mxCell>
+
+        <!-- YEU CAU SINH TRUONG -->
+        <mxCell id="tbl_yeucausinhtruong" value="YeuCauSinhTruong" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="310" width="290" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_yeucausinhtruong_fields" value="PK  maYeuCau varchar(50)&#xa;    nhietDoToiThieu float&#xa;    nhietDoToiDa float&#xa;    doAmToiUu float&#xa;    yeuCauAnhSang nvarchar(100)&#xa;    loaiDat nvarchar(100)&#xa;FK  maCay varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_yeucausinhtruong">
+          <mxGeometry y="26" width="290" height="134" as="geometry" />
+        </mxCell>
+
+        <!-- TON KHO -->
+        <mxCell id="tbl_tonkho" value="TonKho" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="815" y="-120" width="290" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_tonkho_fields" value="PK  maTonKho varchar(50)&#xa;    soLuongTon int&#xa;    soLuongTamGiu int&#xa;    lanCapNhatCuoi datetime&#xa;FK  maVuonUom varchar(50)&#xa;FK  maCay varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_tonkho">
+          <mxGeometry y="26" width="290" height="124" as="geometry" />
+        </mxCell>
+
+        <!-- TAP TIN TRUYEN THONG -->
+        <mxCell id="tbl_taptintruyenthong" value="TaptinTruyenThong" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="550" width="290" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_taptintruyenthong_fields" value="PK  maTruyenThong varchar(50)&#xa;    loaiTruyenThong varchar(30)&#xa;    duongDanTaptin varchar(500)&#xa;    dungLuongByte bigint&#xa;    laAnhChinh bit&#xa;FK  maCay varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_taptintruyenthong">
+          <mxGeometry y="26" width="290" height="134" as="geometry" />
+        </mxCell>
+
+        <!-- DON HANG -->
+        <mxCell id="tbl_donhang" value="DonHang" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="520" width="280" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_donhang_fields" value="PK  maDonHang varchar(50)&#xa;    ngayDatHang datetime&#xa;    tongTien float&#xa;    phiVanChuyen float&#xa;    khoangCachKm float&#xa;    phuongThucThanhToan varchar(50)&#xa;    trangThaiThanhToan varchar(20)&#xa;    trangThaiDonHang varchar(20)&#xa;    tamGiuDen datetime&#xa;    daXacNhanSucKhoe bit&#xa;    anhSucKhoeUrl varchar(500)&#xa;FK  maNguoiDung varchar(50)&#xa;FK  maDiaChi varchar(50)&#xa;FK  maVuonUom varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_donhang">
+          <mxGeometry y="26" width="280" height="264" as="geometry" />
+        </mxCell>
+
+        <!-- CHI TIET DON HANG -->
+        <mxCell id="tbl_chitietdonhang" value="ChiTietDonHang" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="595" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_chitietdonhang_fields" value="PK  maChiTietDonHang varchar(50)&#xa;    soLuong int&#xa;    donGia float&#xa;    thanhTien float&#xa;FK  maDonHang varchar(50)&#xa;FK  maCay varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_chitietdonhang">
+          <mxGeometry y="26" width="280" height="114" as="geometry" />
+        </mxCell>
+
+        <!-- DANH GIA -->
+        <mxCell id="tbl_danhgia" value="DanhGia" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#E6E6E6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="860" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_danhgia_fields" value="PK  maDanhGia varchar(50)&#xa;    soSaoDanhGia int&#xa;    binhLuan nvarchar(MAX)&#xa;    duongDanTruyenThong varchar(500)&#xa;    ngayTao datetime&#xa;FK  maDonHang varchar(50)&#xa;FK  maChiTietDonHang varchar(50)" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=6;overflow=hidden;rotatable=0;points=[];whiteSpace=wrap;fontSize=11;" vertex="1" parent="tbl_danhgia">
+          <mxGeometry y="26" width="280" height="134" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CROW'S FOOT RELATIONSHIPS ================= -->
+
+        <!-- NguoiDung (1) to (*) DiaChiGiaoHang -->
+        <mxCell id="rel_nguoidung_diachi" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_nguoidung" target="tbl_diachigiaohang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NguoiDung (1) to (*) DonHang -->
+        <mxCell id="rel_nguoidung_donhang" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_nguoidung" target="tbl_donhang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- DiaChiGiaoHang (1) to (*) DonHang -->
+        <mxCell id="rel_diachi_donhang" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_diachigiaohang" target="tbl_donhang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NhaCungCap (1) to (*) VuonUom -->
+        <mxCell id="rel_nhacungcap_vuonuom" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_nhacungcap" target="tbl_vuonuom">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- VuonUom (1) to (*) DonHang -->
+        <mxCell id="rel_vuonuom_donhang" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_vuonuom" target="tbl_donhang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- VuonUom (1) to (*) TonKho -->
+        <mxCell id="rel_vuonuom_tonkho" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_vuonuom" target="tbl_tonkho">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- DanhMuc (1) to (*) CayCanh -->
+        <mxCell id="rel_danhmuc_caycanh" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_danhmuc" target="tbl_caycanh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CayCanh (1) to (1) YeuCauSinhTruong -->
+        <mxCell id="rel_caycanh_yeucau" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmandatoryOne;endSize=10;" edge="1" parent="1" source="tbl_caycanh" target="tbl_yeucausinhtruong">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CayCanh (1) to (*) TonKho -->
+        <mxCell id="rel_caycanh_tonkho" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_caycanh" target="tbl_tonkho">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CayCanh (1) to (*) TaptinTruyenThong -->
+        <mxCell id="rel_caycanh_truyenthong" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_caycanh" target="tbl_taptintruyenthong">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- DonHang (1) to (*) ChiTietDonHang -->
+        <mxCell id="rel_donhang_chitiet" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_donhang" target="tbl_chitietdonhang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CayCanh (1) to (*) ChiTietDonHang -->
+        <mxCell id="rel_caycanh_chitiet" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERmany;endSize=10;" edge="1" parent="1" source="tbl_caycanh" target="tbl_chitietdonhang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- DonHang (1) to (0..1) DanhGia -->
+        <mxCell id="rel_donhang_danhgia" style="edgeStyle=orthoEdgeStyle;html=1;strokeColor=#000000;startArrow=ERone;startSize=10;endArrow=ERzeroToOne;endSize=10;" edge="1" parent="1" source="tbl_donhang" target="tbl_danhgia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
