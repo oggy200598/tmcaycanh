@@ -20,8 +20,10 @@ export default function InteractiveMap({
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      const initialCenter = userLocation
-        ? [userLocation.lat, userLocation.lon]
+      const uInitLat = Number(userLocation?.lat ?? userLocation?.viDo);
+      const uInitLon = Number(userLocation?.lon ?? userLocation?.lng ?? userLocation?.kinhDo);
+      const initialCenter = (!isNaN(uInitLat) && !isNaN(uInitLon) && uInitLat >= -90 && uInitLat <= 90 && uInitLon >= -180 && uInitLon <= 180)
+        ? [uInitLat, uInitLon]
         : [10.7745, 106.7032]; // Ho Chi Minh City default
 
       const map = L.map(mapContainerRef.current, {
@@ -58,17 +60,22 @@ export default function InteractiveMap({
       markersLayerRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
 
-      // Invalidate size on load to guarantee zero grey tiles
-      setTimeout(() => map.invalidateSize(), 100);
-      setTimeout(() => map.invalidateSize(), 400);
+      // Invalidate size safely on load
+      const safeInvalidate = () => {
+        if (mapInstanceRef.current && mapContainerRef.current) {
+          try {
+            mapInstanceRef.current.invalidateSize();
+          } catch {}
+        }
+      };
+      setTimeout(safeInvalidate, 100);
+      setTimeout(safeInvalidate, 400);
 
       // Resize observer to keep map responsive when tabs or layouts switch
       let resizeObserver = null;
       if (typeof ResizeObserver !== "undefined" && mapContainerRef.current) {
         resizeObserver = new ResizeObserver(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize();
-          }
+          safeInvalidate();
         });
         resizeObserver.observe(mapContainerRef.current);
       }
@@ -88,7 +95,9 @@ export default function InteractiveMap({
 
     return () => {
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch {}
         mapInstanceRef.current = null;
       }
     };
@@ -104,7 +113,15 @@ export default function InteractiveMap({
 
     // 1. Add Nursery Markers & Coverage Circles
     nurseries.forEach((n) => {
+      if (!n) return;
+      const lat = Number(n.viDo ?? n.vido ?? n.lat);
+      const lon = Number(n.kinhDo ?? n.kinhdo ?? n.lon ?? n.lng);
+      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        return; // Skip invalid coordinates to prevent Leaflet crash
+      }
+
       const isSelected = selectedNurseryId === n.maVuonUom;
+      const radiusKm = Number(n.banKinhGiaoToiDaKm ?? n.bankinhgiaotoidakm ?? 30);
 
       // Custom Botanical Nursery Marker
       const nurseryIcon = L.divIcon({
@@ -131,24 +148,24 @@ export default function InteractiveMap({
         popupAnchor: [0, -17],
       });
 
-      const marker = L.marker([n.viDo, n.kinhDo], { icon: nurseryIcon }).addTo(
+      const marker = L.marker([lat, lon], { icon: nurseryIcon }).addTo(
         layer,
       );
 
       marker.bindPopup(`
         <div style="font-family: inherit; font-size: 13px; min-width: 180px;">
-          <strong style="color: #1b4332; font-size: 14px;">${n.tenVuonUom}</strong><br/>
-          <span style="color: #64748b; font-size: 12px;">${n.diaChi}</span><br/>
+          <strong style="color: #1b4332; font-size: 14px;">${n.tenVuonUom || "Vườn Ươm"}</strong><br/>
+          <span style="color: #64748b; font-size: 12px;">${n.diaChi || ""}</span><br/>
           <div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid #e2e8f0;">
             ⭐ Đánh giá: <strong>${n.danhGiaNhaCungCap || 4.9} / 5</strong><br/>
-            🚚 Bán kính giao: <strong>${n.banKinhGiaoToiDaKm} km</strong><br/>
+            🚚 Bán kính giao: <strong>${radiusKm} km</strong><br/>
             ${n.khoangCachKm !== undefined && n.khoangCachKm !== null ? `📍 Cách bạn: <strong>${n.khoangCachKm} km</strong>` : ""}
           </div>
         </div>
       `);
 
       marker.bindTooltip(
-        `🌱 ${n.tenVuonUom} (Giao tối đa ${n.banKinhGiaoToiDaKm} km)`,
+        `🌱 ${n.tenVuonUom || "Vườn Ươm"} (Giao tối đa ${radiusKm} km)`,
         { direction: "top", offset: [0, -18] }
       );
 
@@ -160,9 +177,9 @@ export default function InteractiveMap({
 
       // Delivery Radius Circle ()
       // Set interactive: false so clicks pass through seamlessly to map for location picking
-      if (showRadiusRings && n.banKinhGiaoToiDaKm) {
-        L.circle([n.viDo, n.kinhDo], {
-          radius: n.banKinhGiaoToiDaKm * 1000,
+      if (showRadiusRings && radiusKm > 0) {
+        L.circle([lat, lon], {
+          radius: radiusKm * 1000,
           color: isSelected ? "#e11d48" : "#2d6a4f",
           fillColor: isSelected ? "#fda4af" : "#52b788",
           fillOpacity: isSelected ? 0.16 : 0.05,
@@ -174,57 +191,73 @@ export default function InteractiveMap({
     });
 
     // 2. Add User Location Marker
-    if (userLocation && userLocation.lat && userLocation.lon) {
-      const userIcon = L.divIcon({
-        className: "custom-user-marker",
-        html: `
-          <div style="
-            background: #2563eb;
-            color: #ffffff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid #ffffff;
-            box-shadow: 0 4px 12px rgba(37,99,235,0.4);
-            font-size: 15px;
-          ">
-            📍
-          </div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -16],
-      });
+    if (userLocation) {
+      const uLat = Number(userLocation.lat ?? userLocation.viDo);
+      const uLon = Number(userLocation.lon ?? userLocation.lng ?? userLocation.kinhDo);
 
-      const userMarker = L.marker([userLocation.lat, userLocation.lon], {
-        icon: userIcon,
-        draggable: Boolean(onLocationSelect),
-      }).addTo(layer);
-
-      userMarker.bindPopup(`
-        <div style="font-size: 13px;">
-          <strong>Vị trí nhận hàng của bạn</strong><br/>
-          <span>${userLocation.name || "Điểm ghim GPS"}</span>
-        </div>
-      `);
-
-      if (onLocationSelect) {
-        userMarker.on("dragend", (e) => {
-          const { lat, lng } = e.target.getLatLng();
-          onLocationSelect(lat, lng, "Vị trí đã kéo thả trên bản đồ");
+      if (!isNaN(uLat) && !isNaN(uLon) && uLat >= -90 && uLat <= 90 && uLon >= -180 && uLon <= 180) {
+        const userIcon = L.divIcon({
+          className: "custom-user-marker",
+          html: `
+            <div style="
+              background: #2563eb;
+              color: #ffffff;
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 3px solid #ffffff;
+              box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+              font-size: 15px;
+            ">
+              📍
+            </div>
+          `,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16],
         });
-      }
 
-      userMarkerRef.current = userMarker;
+        const userMarker = L.marker([uLat, uLon], {
+          icon: userIcon,
+          draggable: Boolean(onLocationSelect),
+        }).addTo(layer);
+
+        userMarker.bindPopup(`
+          <div style="font-size: 13px;">
+            <strong>Vị trí nhận hàng của bạn</strong><br/>
+            <span>${userLocation.name || "Điểm ghim GPS"}</span>
+          </div>
+        `);
+
+        if (onLocationSelect) {
+          userMarker.on("dragend", (e) => {
+            const { lat, lng } = e.target.getLatLng();
+            onLocationSelect(lat, lng, "Vị trí đã kéo thả trên bản đồ");
+          });
+        }
+
+        userMarkerRef.current = userMarker;
+      }
     }
 
-    if (map) {
-      setTimeout(() => map.invalidateSize(), 50);
-      if (userLocation && userLocation.lat && userLocation.lon) {
-        map.panTo([userLocation.lat, userLocation.lon]);
+    if (mapInstanceRef.current && mapContainerRef.current) {
+      setTimeout(() => {
+        if (mapInstanceRef.current && mapContainerRef.current) {
+          try {
+            mapInstanceRef.current.invalidateSize();
+          } catch {}
+        }
+      }, 50);
+
+      const uLat = Number(userLocation?.lat ?? userLocation?.viDo);
+      const uLon = Number(userLocation?.lon ?? userLocation?.lng ?? userLocation?.kinhDo);
+      if (!isNaN(uLat) && !isNaN(uLon) && uLat >= -90 && uLat <= 90 && uLon >= -180 && uLon <= 180) {
+        try {
+          mapInstanceRef.current.panTo([uLat, uLon]);
+        } catch {}
       }
     }
   }, [nurseries, userLocation, showRadiusRings, selectedNurseryId]);

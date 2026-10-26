@@ -142,6 +142,8 @@ async function getPlants(req, res) {
             nearestNursery = {
               maVuonUom: n.mavuonuom,
               tenVuonUom: n.tenvuonuom,
+              viDo: Number(n.vido),
+              kinhDo: Number(n.kinhdo),
               khoangCachKm: dist,
               banKinhGiaoToiDaKm: Number(n.bankinhgiaotoidakm),
               tonKhaDung: Number(n.tonkhadung),

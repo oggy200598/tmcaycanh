@@ -26,6 +26,7 @@ export default function CartPage() {
     subTotal,
     totalWeightKg,
     selectedNursery,
+    setSelectedNursery,
   } = useCart();
   const { user } = useAuth();
   const { currentLocation } = useLocation();
@@ -51,24 +52,66 @@ export default function CartPage() {
   const [shippingFee, setShippingFee] = useState(25000);
   const [withinRadius, setWithinRadius] = useState(true);
 
+  // Auto-fetch missing GIS coordinates for selected nursery if loaded from simple state
+  useEffect(() => {
+    if (!selectedNursery?.maVuonUom) return;
+    const nLat = Number(selectedNursery.viDo ?? selectedNursery.vido);
+    const nLon = Number(selectedNursery.kinhDo ?? selectedNursery.kinhdo);
+
+    if (isNaN(nLat) || isNaN(nLon)) {
+      api
+        .get(`/nurseries/${selectedNursery.maVuonUom}`)
+        .then((res) => {
+          const detail = res.data?.data;
+          if (detail && detail.viDo !== undefined) {
+            setSelectedNursery((prev) => ({
+              ...prev,
+              ...detail,
+              viDo: Number(detail.viDo),
+              kinhDo: Number(detail.kinhDo),
+              banKinhGiaoToiDaKm: Number(detail.banKinhGiaoToiDaKm || 30),
+            }));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [selectedNursery?.maVuonUom, setSelectedNursery]);
+
   useEffect(() => {
     if (!selectedNursery || !pinLocation) return;
 
+    const nLat = Number(selectedNursery.viDo ?? selectedNursery.vido ?? selectedNursery.lat);
+    const nLon = Number(selectedNursery.kinhDo ?? selectedNursery.kinhdo ?? selectedNursery.lon);
+    const pLat = Number(pinLocation.lat);
+    const pLon = Number(pinLocation.lon);
+
+    if (isNaN(nLat) || isNaN(nLon) || isNaN(pLat) || isNaN(pLon)) {
+      setDistanceKm(0);
+      setShippingFee(25000);
+      setWithinRadius(true);
+      return;
+    }
+
     // Haversine distance
     const toRad = (v) => (v * Math.PI) / 180;
-    const dLat = toRad(pinLocation.lat - selectedNursery.viDo);
-    const dLon = toRad(pinLocation.lon - selectedNursery.kinhDo);
+    const dLat = toRad(pLat - nLat);
+    const dLon = toRad(pLon - nLon);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(selectedNursery.viDo)) *
-        Math.cos(toRad(pinLocation.lat)) *
+      Math.cos(toRad(nLat)) *
+        Math.cos(toRad(pLat)) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const dist = Math.round(6371 * c * 100) / 100;
     setDistanceKm(dist);
 
-    const isCovered = dist <= (selectedNursery.banKinhGiaoToiDaKm || 45);
+    const radius = Number(
+      selectedNursery.banKinhGiaoToiDaKm ??
+        selectedNursery.bankinhgiaotoidakm ??
+        45,
+    );
+    const isCovered = dist <= radius;
     setWithinRadius(isCovered);
 
     // Shipping fee formula ()
@@ -452,7 +495,24 @@ export default function CartPage() {
             </p>
 
             <InteractiveMap
-              nurseries={selectedNursery ? [selectedNursery] : []}
+              nurseries={
+                selectedNursery &&
+                !isNaN(Number(selectedNursery.viDo ?? selectedNursery.vido)) &&
+                !isNaN(Number(selectedNursery.kinhDo ?? selectedNursery.kinhdo))
+                  ? [
+                      {
+                        ...selectedNursery,
+                        viDo: Number(selectedNursery.viDo ?? selectedNursery.vido),
+                        kinhDo: Number(selectedNursery.kinhDo ?? selectedNursery.kinhdo),
+                        banKinhGiaoToiDaKm: Number(
+                          selectedNursery.banKinhGiaoToiDaKm ??
+                            selectedNursery.bankinhgiaotoidakm ??
+                            30,
+                        ),
+                      },
+                    ]
+                  : []
+              }
               userLocation={{
                 lat: pinLocation.lat,
                 lon: pinLocation.lon,

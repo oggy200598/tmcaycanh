@@ -351,7 +351,8 @@ tmcaycanh/
 - `MapExplorerPage`: Bản đồ tương tác Leaflet sử dụng Esri World Street tiles không dính watermark, hiển thị trọn vẹn 25 vườn ươm với vòng tròn bán kính phủ sóng giao hàng tối đa (xx km). Lớp vòng tròn bán kính được thiết lập `interactive: false` cho phép sự kiện click chuột xuyên qua hoàn toàn để ghim điểm nhận hàng mượt mà ở bất cứ vị trí nào (ngay cả bên trong vòng tròn), đồng thời hiển thị tooltip tên & bán kính trên marker ghim vườn ươm.
 - Đồng bộ chuẩn hóa dữ liệu trạng thái `trangthai = 'Active'` cho toàn bộ các bảng trong PostgreSQL và áp dụng kiểm tra trạng thái case-insensitive `LOWER(trangthai) = 'active'` trên Backend để đảm bảo dữ liệu luôn trả về chính xác tuyệt đối.
 - `RecommendationsPage`: Hệ thống gợi ý cây cảnh hợp thổ nhưỡng dựa trên bộ lọc khí hậu tương tác (Spatial Matching Engine).
-- `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút.
+- `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút. Tự động đồng bộ bổ sung tọa độ GIS vườn ươm nếu dữ liệu cart trước đó thiếu, ngăn chặn tính khoảng cách lỗi.
+- `InteractiveMap`: Được bổ sung cơ chế kiểm tra tọa độ an toàn (Coordinate Sanitization & Safe Invalidation) cho tất cả vườn ươm và điểm ghim người dùng, loại bỏ triệt để lỗi `Invalid LatLng object: (undefined, undefined)` và `_leaflet_pos` khi render hoặc chuyển trang.
 - `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước, ảnh kiểm định sức khỏe cây tại vườn, bản đồ Live Tracking GPS, form đánh giá 1-5 sao kèm upload ảnh thực tế.
 - `AdminPortalPage`: 
   - Đăng nhập bảo mật nghiêm ngặt RBAC (cho phép cả `Admin` và `Staff` quản trị sàn; riêng quyền quản lý người dùng `users` chỉ mở cho `Admin`).
