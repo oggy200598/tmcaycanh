@@ -23,16 +23,54 @@ export default function InteractiveMap({
         ? [userLocation.lat, userLocation.lon]
         : [10.7745, 106.7032]; // Ho Chi Minh City default
 
-      const map = L.map(mapContainerRef.current).setView(initialCenter, 11);
+      const map = L.map(mapContainerRef.current, {
+        scrollWheelZoom: true,
+      }).setView(initialCenter, 11);
 
-      // OpenStreetMap Tiles
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors | TMCayCanh GIS",
-        maxZoom: 19,
-      }).addTo(map);
+      // High-performance, clean tiles WITHOUT API key or watermarks
+      const primaryTiles = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution:
+            "Tiles &copy; Esri &mdash; National Geographic, DeLorme, NAVTEQ | TMCayCanh GIS",
+          maxZoom: 19,
+        }
+      );
+      primaryTiles.addTo(map);
+
+      // Fallback to OSM HOT if Esri is unreachable
+      primaryTiles.on("tileerror", () => {
+        if (!map.hasLayer(fallbackTiles)) {
+          const fallbackTiles = L.tileLayer(
+            "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+            {
+              attribution:
+                "&copy; OpenStreetMap contributors, Humanitarian OpenStreetMap Team",
+              subdomains: "abc",
+              maxZoom: 19,
+            }
+          );
+          fallbackTiles.addTo(map);
+        }
+      });
 
       markersLayerRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
+
+      // Invalidate size on load to guarantee zero grey tiles
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 400);
+
+      // Resize observer to keep map responsive when tabs or layouts switch
+      let resizeObserver = null;
+      if (typeof ResizeObserver !== "undefined" && mapContainerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        resizeObserver.observe(mapContainerRef.current);
+      }
 
       // Click to select location
       if (onLocationSelect) {
@@ -167,6 +205,13 @@ export default function InteractiveMap({
       }
 
       userMarkerRef.current = userMarker;
+    }
+
+    if (map) {
+      setTimeout(() => map.invalidateSize(), 50);
+      if (userLocation && userLocation.lat && userLocation.lon) {
+        map.panTo([userLocation.lat, userLocation.lon]);
+      }
     }
   }, [nurseries, userLocation, showRadiusRings, selectedNurseryId]);
 

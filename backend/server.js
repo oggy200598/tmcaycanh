@@ -10,6 +10,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const adminController = require('./controllers/adminController');
+const path = require('path');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
@@ -46,6 +48,10 @@ app.use('/api/nurseries', nurseryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Phục vụ tĩnh thư mục ảnh frontend/public/assets/images
+app.use('/assets/images', express.static(path.join(__dirname, '../frontend/public/assets/images')));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

@@ -13,6 +13,8 @@ import {
   Clock,
   ArrowRight,
   TrendingUp,
+  Upload,
+  X,
 } from "lucide-react";
 
 export default function SupplierPortalPage() {
@@ -53,6 +55,27 @@ export default function SupplierPortalPage() {
   const [plantSunlight, setPlantSunlight] = useState("Trong nhà");
   const [plantSoil, setPlantSoil] = useState("Đất tơi xốp, giàu mùn dừa");
   const [plantImageUrl, setPlantImageUrl] = useState("");
+  const [uploadingHealthPhoto, setUploadingHealthPhoto] = useState(false);
+  const [uploadingPlantImage, setUploadingPlantImage] = useState(false);
+
+  const handleUploadImage = async (file, setUrlCallback, setLoadingCallback) => {
+    if (!file) return;
+    try {
+      setLoadingCallback(true);
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (res.data?.success && res.data?.data?.url) {
+        setUrlCallback(res.data.data.url);
+      }
+    } catch (err) {
+      alert(err.response?.data?.error?.message || err.message || "Lỗi khi tải ảnh lên.");
+    } finally {
+      setLoadingCallback(false);
+    }
+  };
 
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -439,44 +462,94 @@ export default function SupplierPortalPage() {
                     marginBottom: "1.25rem",
                   }}
                 >
-                  Theo quy định , đơn vị xuất cây bắt buộc phải cập nhật link
-                  ảnh thực tế cây tại vườn và xác nhận đạt chuẩn chất lượng
-                  trước khi giao.
+                  Theo quy định nghiệp vụ BR13: Nhà cung cấp bắt buộc phải chụp
+                  ảnh và xác nhận tình trạng sức khỏe thực tế của cây trước khi
+                  giao cho đối tác vận chuyển.
                 </p>
 
                 <div className="input-group" style={{ marginBottom: "1rem" }}>
                   <label className="input-label">
-                    URL Ảnh Chụp Thực Tế Tại Vườn
+                    Ảnh Chụp Thực Tế Tại Vườn (Tải lên thư mục assets/images)
                   </label>
-                  <input
-                    type="text"
-                    value={healthPhotoUrl}
-                    onChange={(e) => setHealthPhotoUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="input-field"
-                  />
-                  <div
-                    style={{ display: "flex", gap: "0.5rem", marginTop: "6px" }}
+                  <label
+                    className="btn btn-secondary"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.5rem",
+                      cursor: uploadingHealthPhoto ? "not-allowed" : "pointer",
+                      padding: "0.85rem 1rem",
+                      border: "2px dashed #94a3b8",
+                      borderRadius: "var(--radius-md)",
+                      backgroundColor: "#f8fafc",
+                      width: "100%",
+                      fontWeight: 600,
+                    }}
                   >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setHealthPhotoUrl(
-                          "https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&w=800&q=80",
-                        )
-                      }
+                    <Upload size={18} />
+                    <span>
+                      {uploadingHealthPhoto
+                        ? "Đang tải ảnh lên hệ thống..."
+                        : healthPhotoUrl
+                        ? "Chọn ảnh thực tế khác từ máy"
+                        : "Tải ảnh cây thực tế từ thiết bị"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      disabled={uploadingHealthPhoto}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleUploadImage(
+                            e.target.files[0],
+                            setHealthPhotoUrl,
+                            setUploadingHealthPhoto
+                          );
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {healthPhotoUrl && (
+                    <div
                       style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: "0.5rem",
                         fontSize: "0.75rem",
-                        background: "none",
-                        border: "none",
-                        color: "var(--primary-700)",
-                        cursor: "pointer",
-                        textDecoration: "underline",
+                        color: "var(--text-muted)",
                       }}
                     >
-                      Dùng ảnh mẫu cây xanh đạt chuẩn
-                    </button>
-                  </div>
+                      <span
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "80%",
+                        }}
+                      >
+                        📁 {healthPhotoUrl}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setHealthPhotoUrl("")}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "2px",
+                        }}
+                      >
+                        <X size={14} /> Xóa
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {healthPhotoUrl && (
@@ -888,14 +961,110 @@ export default function SupplierPortalPage() {
           </div>
 
           <div className="input-group">
-            <label className="input-label">Link Hình Ảnh Cây</label>
-            <input
-              type="text"
-              value={plantImageUrl}
-              onChange={(e) => setPlantImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/photo-..."
-              className="input-field"
-            />
+            <label className="input-label">
+              Hình Ảnh Đại Diện Cây Cảnh (Tải lên thư mục assets/images)
+            </label>
+            <label
+              className="btn btn-secondary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                cursor: uploadingPlantImage ? "not-allowed" : "pointer",
+                padding: "0.85rem 1rem",
+                border: "2px dashed #94a3b8",
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "#f8fafc",
+                width: "100%",
+                fontWeight: 600,
+              }}
+            >
+              <Upload size={18} />
+              <span>
+                {uploadingPlantImage
+                  ? "Đang tải ảnh lên hệ thống..."
+                  : plantImageUrl
+                  ? "Chọn ảnh khác từ thiết bị"
+                  : "Tải ảnh cây từ thiết bị (lưu vào assets/images)"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                disabled={uploadingPlantImage}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleUploadImage(
+                      e.target.files[0],
+                      setPlantImageUrl,
+                      setUploadingPlantImage
+                    );
+                  }
+                }}
+              />
+            </label>
+
+            {plantImageUrl && (
+              <div style={{ marginTop: "0.75rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: "0.8rem",
+                    color: "var(--text-muted)",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "80%",
+                    }}
+                  >
+                    📁 {plantImageUrl}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPlantImageUrl("")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#ef4444",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "2px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <X size={14} /> Xóa ảnh
+                  </button>
+                </div>
+                <div
+                  style={{
+                    width: "140px",
+                    height: "140px",
+                    borderRadius: "var(--radius-md)",
+                    overflow: "hidden",
+                    border: "1px solid var(--border-light)",
+                  }}
+                >
+                  <img
+                    src={plantImageUrl}
+                    alt="plant preview"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <button

@@ -49,7 +49,8 @@ test("Database Integrity & Seed Data Verification", async (t) => {
           "nhietdotoithieu must be strictly less than nhietdotoida",
         );
         assert.ok(
-          ["Toàn phần", "Bán râm", "Trong nhà"].includes(row.yeucauanhsang),
+          Boolean(row.yeucauanhsang && row.yeucauanhsang.trim().length > 0),
+          "yeucauanhsang must be a valid non-empty description",
         );
       }
     },

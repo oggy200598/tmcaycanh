@@ -13,6 +13,8 @@ import {
   Calendar,
   AlertCircle,
   ExternalLink,
+  Upload,
+  X,
 } from "lucide-react";
 
 export default function OrderDetailPage() {
@@ -25,8 +27,33 @@ export default function OrderDetailPage() {
   const [reviewModalItem, setReviewModalItem] = useState(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+  const [reviewImageUrl, setReviewImageUrl] = useState("");
+  const [uploadingReviewImage, setUploadingReviewImage] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSuccessMsg, setReviewSuccessMsg] = useState("");
+
+  const handleUploadReviewImage = async (file) => {
+    if (!file) return;
+    try {
+      setUploadingReviewImage(true);
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (res.data?.success && res.data?.data?.url) {
+        setReviewImageUrl(res.data.data.url);
+      }
+    } catch (err) {
+      alert(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Lỗi khi tải ảnh lên."
+      );
+    } finally {
+      setUploadingReviewImage(false);
+    }
+  };
 
   useEffect(() => {
     async function loadOrder() {
@@ -52,11 +79,13 @@ export default function OrderDetailPage() {
         maChiTietDonHang: reviewModalItem.maChiTietDonHang,
         soSaoDanhGia: reviewRating,
         binhLuan: reviewComment,
+        duongDanTruyenThong: reviewImageUrl || null,
       });
 
       setReviewSuccessMsg("Cảm ơn bạn đã gửi đánh giá sản phẩm thành công!");
       setTimeout(() => {
         setReviewModalItem(null);
+        setReviewImageUrl("");
         setReviewSuccessMsg("");
         // Reload order
         api.get(`/orders/${id}`).then((res) => setOrder(res.data?.data));
@@ -717,6 +746,100 @@ export default function OrderDetailPage() {
                     placeholder="Cây nhận được có tươi tốt không? Vận chuyển thế nào..."
                     className="input-field"
                   />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">
+                    Ảnh thực tế cây nhận được (Tùy chọn)
+                  </label>
+                  <label
+                    className="btn btn-secondary"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.5rem",
+                      cursor: uploadingReviewImage ? "not-allowed" : "pointer",
+                      padding: "0.75rem 1rem",
+                      border: "2px dashed #94a3b8",
+                      borderRadius: "var(--radius-md)",
+                      backgroundColor: "#f8fafc",
+                      width: "100%",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    <Upload size={16} />
+                    <span>
+                      {uploadingReviewImage
+                        ? "Đang tải ảnh lên..."
+                        : reviewImageUrl
+                        ? "Đổi ảnh khác"
+                        : "Tải ảnh từ thiết bị (lưu vào assets/images)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      disabled={uploadingReviewImage}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleUploadReviewImage(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {reviewImageUrl && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      <img
+                        src={reviewImageUrl}
+                        alt="review"
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "var(--radius-sm)",
+                          objectFit: "cover",
+                          border: "1px solid var(--border-light)",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text-muted)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          flex: 1,
+                        }}
+                      >
+                        📁 {reviewImageUrl}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setReviewImageUrl("")}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "2px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        <X size={14} /> Xóa
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div

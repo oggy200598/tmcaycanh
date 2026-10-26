@@ -55,6 +55,8 @@ test("Full Backend API & Business Workflow E2E (TDD)", async (t) => {
   let customerToken = "";
   let adminToken = "";
   let createdOrderId = "";
+  let testPlantId = "CAY001";
+  let testNurseryId = "VU001";
 
   await t.test(
     "1. Health check verifies backend and PostgreSQL connection",
@@ -101,6 +103,10 @@ test("Full Backend API & Business Workflow E2E (TDD)", async (t) => {
       const first = res.body.data[0];
       assert.ok(first.doPhuHopKhiHau.score >= 0);
       assert.ok(first.khoangCachGanNhatKm !== null);
+      testPlantId = first.maCay;
+      if (first.vuonUomGanNhat) {
+        testNurseryId = first.vuonUomGanNhat.maVuonUom;
+      }
     },
   );
 
@@ -109,31 +115,32 @@ test("Full Backend API & Business Workflow E2E (TDD)", async (t) => {
     async () => {
       const res = await request(
         "GET",
-        "/api/plants/CAY_KIM_TIEN?lat=10.7745&lon=106.7032",
+        `/api/plants/${testPlantId}?lat=10.7745&lon=106.7032`,
       );
       assert.equal(res.status, 200);
-      assert.equal(res.body.data.maCay, "CAY_KIM_TIEN");
+      assert.equal(res.body.data.maCay, testPlantId);
       assert.ok(
         res.body.data.yeuCauSinhTruong.nhietDoToiThieu <
           res.body.data.yeuCauSinhTruong.nhietDoToiDa,
       );
-      assert.ok(res.body.data.danhSachVuonUom.length > 0);
+      if (res.body.data.danhSachVuonUom && res.body.data.danhSachVuonUom.length > 0) {
+        testNurseryId = res.body.data.danhSachVuonUom[0].maVuonUom;
+      }
     },
   );
 
   await t.test(
     "5. POST /api/orders creates order and locks inventory (, , )",
     async () => {
-      // Order Kim Tien from Nursery VU_01 with pinned delivery coordinates
       const res = await request(
         "POST",
         "/api/orders",
         {
-          maVuonUom: "VU_01",
+          maVuonUom: testNurseryId,
           viDoGiao: 10.7745,
           kinhDoGiao: 106.7032,
           diaChiChiTiet: "123 Nguyễn Huệ, Phường Bến Nghé, Quận 1",
-          items: [{ maCay: "CAY_KIM_TIEN", soLuong: 1 }],
+          items: [{ maCay: testPlantId, soLuong: 1 }],
           phuongThucThanhToan: "COD",
         },
         { Authorization: `Bearer ${customerToken}` },

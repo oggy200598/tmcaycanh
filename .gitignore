@@ -4,4 +4,6 @@ media/
 backend/.env
 frontend/.env
 node_modules/
-dist/
+**/node_modules/
+dist/
+**/dist/

@@ -270,22 +270,42 @@ tmcaycanh/
 
 ### 9.1. Trạng thái Kết nối Cơ sở Dữ liệu & Dữ liệu Mẫu (Database & Seeding)
 
-- **Tình trạng kết nối PostgreSQL:** Đã kiểm tra và điều chỉnh `DB_NAME=tmcaycanh` trong `backend/.env` và `.env` gốc để kết nối chính xác với PostgreSQL localhost:5432.
-- **Dữ liệu mẫu (Seed Data):** Đã tạo script `backend/seed.js` và nạp thành công dữ liệu mẫu cho toàn bộ **12/12 bảng**:
-  1. `NguoiDung`: 6 tài khoản mẫu (`Admin`, `Staff`, 2 `Supplier`, 2 `Customer`) có mã hóa mật khẩu bcrypt `123456`.
-  2. `NhaCungCap`: 3 nhà cung cấp hoa kiểng & bonsai (TP. HCM, Đà Lạt, Chợ Lách Bến Tre).
-  3. `DanhMuc`: 5 danh mục chuẩn (Trong nhà, Ban công, Bonsai, Công trình, Để bàn).
-  4. `DiaChiGiaoHang`: Địa chỉ ghim tọa độ GIS chuẩn tại TP. HCM.
-  5. `VuonUom`: 4 vườn ươm với tọa độ thực tế, bán kính phục vụ 35 - 120 km.
-  6. `CayCanh`: 8 cây cảnh phong thủy và nội thất kèm ảnh curated chất lượng cao.
-  7. `YeuCauSinhTruong`: Bản ghi 1-1 cho cả 8 cây với dải nhiệt độ, độ ẩm, ánh sáng, loại đất ().
-  8. `TonKho`: 11 bản ghi tồn kho phân bổ theo từng vườn ươm.
-  9. `TaptinTruyenThong`: 8 media URLs cho ảnh chính và hình ảnh sinh thái.
-  10. `DonHang`: 3 đơn hàng mẫu ở các giai đoạn tuyến tính (`ChoXacNhan` khóa 15p, `DangGiaoHang`, `DaHoanThanh`).
-  11. `ChiTietDonHang`: 4 bản ghi chi tiết đơn hàng.
-  12. `DanhGia`: Đánh giá 5 sao kèm nhận xét chất lượng phục vụ và đóng gói.
+- **Tình trạng kết nối PostgreSQL:** Đã kết nối chính xác với PostgreSQL localhost:5432 (`DB_NAME=tmcaycanh`, user `postgres`).
+- **Nhập dữ liệu chính thức từ `DATA/data.sql`:** Đã xóa sạch dữ liệu seed thử nghiệm và import toàn bộ dữ liệu thực tế từ `DATA/data.sql` vào cơ sở dữ liệu PostgreSQL cho cả 12 bảng:
+  - `nguoidung`: 704 bản ghi (bổ sung bcrypt hash `123456` cho tài khoản, duy trì 4 tài khoản demo tiện đăng nhập: Admin, Staff, Supplier, Customer).
+  - `nhacungcap`: 12 nhà cung cấp.
+  - `danhmuc`: 12 danh mục cây cảnh phong phú.
+  - `diachigiaohang`: 760 địa chỉ kèm tọa độ GIS chuẩn hóa.
+  - `vuonuom`: 25 vườn ươm trên toàn quốc với tọa độ GIS và bán kính giao hàng.
+  - `caycanh`: 160 giống cây cảnh sinh thái đa dạng.
+  - `yeucausinhtruong`: 160 bản ghi quan hệ 1-1 với `caycanh` ().
+  - `tonkho`: 260 bản ghi quản lý tồn kho tại các vườn ươm.
+  - `taptintruyenthong`: 320 bản ghi ảnh cây chuẩn hóa đường dẫn `/assets/images/...`.
+  - `donhang`: 950 đơn hàng ở các giai đoạn tuyến tính.
+  - `chitietdonhang`: 1,300 dòng chi tiết đơn hàng.
+  - `danhgia`: 341 đánh giá chất lượng sản phẩm và dịch vụ.
 
-### 9.2. Toàn bộ Endpoint RESTful Backend đã hoàn thiện
+### 9.2. Kiến Trúc Tải Lên & Quản Lý Tập Tin Đa Phương Tiện (Media Upload Architecture)
+
+- **Thư mục lưu trữ:** `frontend/public/assets/images/`. Toàn bộ ảnh cây cảnh được sử dụng 100% là ảnh thực vật sinh thái thực tế (Kim Tiền, Lưỡi Hổ, Bàng Singapore, Sen Đá, Bonsai, Lan Ý, Trầu Bà, Kim Ngân, Vạn Niên Thanh, Cau Tiểu Trâm, Dương Xỉ, Thiết Mộc Lan,...), đã xóa sạch các tệp sơ đồ kiến trúc cũ.
+- **Bản đồ GIS Leaflet tương tác:** Sử dụng Esri World Street Map tiles CDN (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}`) kèm fallback OSM Humanitarian (`https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png`), loại bỏ triệt để lỗi watermark `API KEY REQUIRED` và lỗi khung xám bản đồ, tích hợp `ResizeObserver` và `map.invalidateSize()` tự động cùng `leaflet/dist/leaflet.css` tích hợp trực tiếp.
+- **Backend API Upload (`POST /api/upload`):** 
+  - Sử dụng middleware `multer` tiếp nhận file ảnh từ thiết bị, lọc định dạng (jpg, png, webp, gif) và kiểm tra dung lượng tối đa 15MB.
+  - Tự động sinh tên file an toàn dựa trên timestamp và lưu trực tiếp vào `frontend/public/assets/images/`.
+  - Trả về đường dẫn chuẩn hóa `/assets/images/<filename>` để lưu vào Database, loại bỏ hoàn toàn việc lưu đường dẫn cục bộ hoặc URL ngoài `http://`.
+- **Giao diện Người Dùng (Frontend):**
+  - **Không cho nhập link URL:** Đã thay thế toàn bộ trường nhập URL bằng nút bấm tải file từ thiết bị (`<input type="file" accept="image/*">`).
+  - **Khu vực áp dụng:**
+    1. Form kiểm định sức khỏe cây tại vườn trước khi giao hàng (BR13).
+    2. Form đăng bán cây cảnh mới dành cho Nhà cung cấp.
+    3. Form Thêm / Sửa cây cảnh trong Admin Portal.
+    4. Form gửi đánh giá và nhận xét sản phẩm của Khách hàng.
+  - Có giao diện xem trước ảnh (preview), hiển thị tên tệp và nút xóa/đổi ảnh trực quan.
+- **Chuẩn hóa ảnh cây cảnh sinh thái & danh mục:**
+  - 100% cây cảnh dùng ảnh thực tế đúng loài (thay ảnh Tùng thơm sang cây lá kim thực tế thay vì bảng trang điểm; ảnh Bonsai thật; phân tách ảnh từng giống sen đá Sedum, Bắp cải, Hồng đen, Rubi,...).
+  - Bổ sung 22 giống cây vào 5 danh mục từng để trống ("Cây cảnh sân vườn", "Cây phong thủy", "Cây bonsai", "Cây hoa trang trí", "Chậu cây làm quà"), bảo đảm 12/12 danh mục đều có sản phẩm hoạt động.
+
+### 9.3. Toàn bộ Endpoint RESTful Backend đã hoàn thiện
 
 - **Auth (`/api/auth`):**
   - `POST /register`: Đăng ký Khách hàng / Nhà cung cấp.
@@ -307,28 +327,49 @@ tmcaycanh/
   - `PATCH /:id/status`: Chuyển trạng thái tuyến tính (), bắt buộc ảnh sức khỏe (), trừ tồn kho chính thức khi hoàn tất (), giải phóng tồn kho khi hủy ().
   - `PATCH /:id/health-check`: Tải ảnh chụp thực tế cây tại vườn và xác nhận sức khỏe đạt chuẩn ().
 - **Reviews (`/api/reviews`):**
-  - `POST /`: Gửi đánh giá cho đơn hàng `DaHoanThanh` (), tự động tính lại điểm uy tín NCC ().
-- **Admin & Giám Sát (`/api/admin`):**
+  - `POST /`: Gửi đánh giá cho đơn hàng `DaHoanThanh` () kèm ảnh thực tế, tự động tính lại điểm uy tín NCC ().
+- **Upload (`/api/upload`):**
+  - `POST /`: Nhận ảnh từ thiết bị, lưu vào `frontend/public/assets/images/`, trả về đường dẫn `/assets/images/...`.
+- **Admin & Giám Sát (`/api/admin` - Yêu cầu role = 'Admin'):**
   - `GET /dashboard`: Tổng quan tài chính, đơn hàng, người dùng, cảnh báo tồn kho tối thiểu ().
   - `GET /heatmap`: Dữ liệu bản đồ nhiệt Heatmap GIS đơn hàng hoàn thành ().
   - `GET /users`, `PATCH /users/:id/status`: Quản lý và khóa/mở khóa tài khoản.
+  - **Quản lý Cây Cảnh (CRUD):** `GET /plants`, `POST /plants`, `PUT /plants/:id`, `DELETE /plants/:id`.
+  - **Quản lý Nhà Cung Cấp (CRUD):** `GET /suppliers`, `POST /suppliers`, `PUT /suppliers/:id`, `DELETE /suppliers/:id`.
+  - **Quản lý Vườn Ươm (CRUD):** `GET /nurseries`, `POST /nurseries`, `PUT /nurseries/:id`, `DELETE /nurseries/:id`.
+  - **Quản lý Danh Mục (CRUD):** `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id`.
+  - **Quản lý Tồn Kho (CRUD):** `GET /inventory`, `POST /inventory`, `PUT /inventory/:id`, `DELETE /inventory/:id`.
+  - **Xem Đơn Hàng (Chỉ đọc - Strictly Read-Only):** `GET /orders`, `GET /orders/:id`. Tuyệt đối không cho phép Sửa hoặc Xóa đơn hàng từ Admin Portal.
 
-### 9.3. Giao diện Frontend (React / Vite / Leaflet) đã hoàn thiện
+### 9.4. Giao diện Frontend (React / Vite / Leaflet) đã hoàn thiện
 
 - `HomePage`: Hero banner thực vật sang trọng, bộ chọn tọa độ và đối chiếu thổ nhưỡng vùng miền, danh mục, cây nổi bật và preview bản đồ vườn ươm.
-- `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả.
-- `ProductDetailPage`: Thư viện ảnh, bảng thông số sinh trưởng 1-1, đồng hồ đo độ phù hợp khí hậu, chọn vườn ươm gần nhất và danh sách đánh giá.
-- `MapExplorerPage`: Bản đồ tương tác Leaflet toàn màn hình, hiển thị vòng tròn bán kính phủ sóng, chi tiết kho vườn ươm và ghim vị trí nhận hàng.
+- `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả (toàn bộ 12 danh mục có dữ liệu thực).
+- `ProductDetailPage`: Thư viện ảnh đúng loài, bảng thông số sinh trưởng 1-1, đồng hồ đo độ phù hợp khí hậu, chọn vườn ươm gần nhất và danh sách đánh giá.
+- `MapExplorerPage`: Bản đồ tương tác Leaflet sử dụng Esri World Street tiles không dính watermark, hiển thị vòng tròn bán kính phủ sóng, chi tiết kho vườn ươm và ghim vị trí nhận hàng.
 - `RecommendationsPage`: Hệ thống gợi ý cây cảnh hợp thổ nhưỡng dựa trên bộ lọc khí hậu tương tác (Spatial Matching Engine).
 - `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút.
-- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước (), ảnh kiểm định sức khỏe cây tại vườn (), bản đồ Live Tracking GPS (), form đánh giá 1-5 sao ().
-- `SupplierPortalPage`: Quản lý đơn hàng, tải ảnh sức khỏe cây, cảnh báo tồn kho thấp (), thiết lập vườn ươm GIS (BR03), đăng bán cây mới (, ).
-- `AdminPortalPage`: Báo cáo doanh thu, bản đồ nhiệt Heatmap GIS (), kiểm duyệt sản phẩm mới (), quản lý người dùng.
+- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước (), ảnh kiểm định sức khỏe cây tại vườn (), bản đồ Live Tracking GPS (), form đánh giá 1-5 sao kèm upload ảnh thực tế ().
+- `SupplierPortalPage`: Quản lý đơn hàng, nút tải ảnh sức khỏe cây từ máy, cảnh báo tồn kho thấp (), thiết lập vườn ươm GIS (BR03), đăng bán cây mới có nút upload ảnh sản phẩm (, ).
+- `AdminPortalPage`: 
+  - Đăng nhập bảo mật nghiêm ngặt RBAC (chỉ tài khoản `vaiTro = 'Admin'` mới được thao tác).
+  - Tab **Cảnh Báo Tồn Kho Tối Thiểu**: Danh sách cây dưới ngưỡng quy định.
+  - Tab **Bản Đồ Nhiệt Heatmap Đơn Hàng**: Biểu đồ không gian đơn hàng hoàn thành.
+  - Tab **Kiểm Duyệt Cây Cảnh**: Phê duyệt (`Active`) hoặc Từ chối sản phẩm mới đăng bán.
+  - Tab **Cây Cảnh**: Xem danh sách, tìm kiếm, lọc theo danh mục, Thêm cây (có upload ảnh), Sửa thông tin/giá, Xóa cây.
+  - Tab **Nhà Cung Cấp**: Xem danh sách, Thêm NCC mới, Sửa thông tin liên hệ/MST/điểm uy tín, Xóa NCC.
+  - Tab **Vườn Ươm**: Xem danh sách, Thêm vườn ươm (nhập tọa độ GIS vĩ độ/kinh độ, bán kính phục vụ), Sửa, Xóa vườn ươm.
+  - Tab **Danh Mục**: Xem danh sách danh mục, Thêm danh mục mới, Sửa tên/mô tả, Xóa danh mục.
+  - Tab **Tồn Kho (CRUD)**: Quản lý số lượng tồn kho từng vườn ươm, Thêm bản ghi tồn kho mới (chọn cây, chọn vườn), Sửa số lượng tồn, Xóa bản ghi (chặn xóa nếu đang có hàng tạm giữ).
+  - Tab **Đơn Hàng (Chỉ Đọc)**: Xem toàn bộ danh sách đơn hàng toàn sàn, tìm kiếm theo mã đơn/khách hàng, xem chi tiết modal (danh sách cây, địa chỉ giao, ảnh kiểm định sức khỏe), TUYỆT ĐỐI không có nút Sửa hay Xóa.
+  - Tab **Quản Lý Người Dùng**: Danh sách người dùng, chức năng Khóa / Mở khóa tài khoản.
 - `LoginPage` & `RegisterPage`: Đăng nhập/đăng ký có nút đăng nhập nhanh 4 vai trò demo.
 
-### 9.4. Báo cáo Kết quả Kiểm thử TDD (100% Pass)
+### 9.5. Báo cáo Kết quả Kiểm thử TDD (32/32 Pass)
 
-- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn (Kết nối DB, 12 bảng có dữ liệu, quan hệ 1-1 CayCanh - YeuCauSinhTruong, tọa độ vườn ươm, phân quyền RBAC).
+- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn (Kết nối DB, 12 bảng nạp dữ liệu từ data.sql, quan hệ 1-1 CayCanh - YeuCauSinhTruong, tọa độ vườn ươm, phân quyền RBAC).
 - `backend/test/gis-service.test.js`: 5/5 test cases đạt chuẩn (Công thức khoảng cách Haversine, cước ship , thuật toán tương thích thổ nhưỡng , chu trình tuyến tính /).
 - `backend/test/api-flow.test.js`: 9/9 test cases đạt chuẩn (Healthcheck, JWT Login, truy vấn GIS, tạo đơn khóa tồn kho ACID , ngăn chặn nhảy cóc trạng thái đơn , kiểm tra bắt buộc ảnh sức khỏe , trừ tồn kho chính thức , Heatmap GIS ).
+- `backend/test/upload-service.test.js`: 4/4 test cases đạt chuẩn (Từ chối upload thiếu file, upload ảnh thành công lưu vào `frontend/public/assets/images`, trả về `/assets/images/...`, chặn upload không xác thực).
+- `backend/test/admin-crud.test.js`: 8/8 test cases đạt chuẩn (Chặn người dùng thường 403, Admin CRUD Cây Cảnh, Admin CRUD Nhà Cung Cấp, Admin CRUD Vườn Ươm, Admin CRUD Danh Mục, Admin CRUD Tồn Kho, Đơn hàng chỉ đọc - cấm PUT/DELETE).
 - `Browser Verification`: Đã chạy kiểm thử tự động trên trình duyệt thật qua `browser_subagent` và ghi lại video phiên làm việc hoàn tất tại `tmcaycanh_demo_1793029699740.webp`.

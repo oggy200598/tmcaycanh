@@ -32,10 +32,10 @@ async function getPlants(req, res) {
       LEFT JOIN danhmuc dm ON c.madanhmuc = dm.madanhmuc
       LEFT JOIN yeucausinhtruong y ON c.macay = y.macay
       LEFT JOIN (
-        SELECT macay, duongdantaptin 
+        SELECT DISTINCT ON (macay) macay, duongdantaptin 
         FROM taptintruyenthong 
         WHERE laanhchinh = true 
-        GROUP BY macay, duongdantaptin
+        ORDER BY macay, matruyenthong ASC
       ) t ON c.macay = t.macay
       LEFT JOIN tonkho tk ON c.macay = tk.macay
       WHERE 1=1
@@ -46,9 +46,9 @@ async function getPlants(req, res) {
     // Filter public published plants unless admin/staff queries all
     if (status) {
       params.push(status);
-      query += ` AND c.trangthai = $${params.length}`;
+      query += ` AND c.trangthai ILIKE $${params.length}`;
     } else {
-      query += ` AND c.daxuatban = true AND c.trangthai = 'Active'`;
+      query += ` AND c.daxuatban = true AND c.trangthai ILIKE 'active'`;
     }
 
     if (category) {
@@ -459,9 +459,7 @@ async function createPlant(req, res) {
     );
 
     // Media
-    const imgUrl =
-      hinhAnhUrl ||
-      "https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&w=800&q=80";
+    const imgUrl = hinhAnhUrl || "/assets/images/cay_van_nien_thanh.png";
     await client.query(
       `INSERT INTO taptintruyenthong (matruyenthong, loaitruyenthong, duongdantaptin, dungluongbyte, laanhchinh, macay)
        VALUES ($1, $2, $3, $4, $5, $6)`,
