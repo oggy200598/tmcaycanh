@@ -30,8 +30,8 @@ export default function RegisterPage() {
         vaiTro,
       });
 
-      if (loggedUser.vaiTro === 'Supplier') {
-        navigate('/supplier');
+      if (loggedUser.vaiTro === 'Supplier' || loggedUser.vaiTro === 'Staff' || loggedUser.vaiTro === 'Admin') {
+        navigate('/admin');
       } else {
         navigate('/');
       }

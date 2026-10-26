@@ -37,6 +37,12 @@ test("Admin Comprehensive CRUD & RBAC Verification (TDD)", async (t) => {
     { expiresIn: "1h" }
   );
 
+  const staffToken = jwt.sign(
+    { maNguoiDung: "US_STAFF_TEST", vaiTro: "Staff", email: "staff@test.com" },
+    process.env.JWT_SECRET || "fallback_secret",
+    { expiresIn: "1h" }
+  );
+
   async function api(path, options = {}) {
     const res = await fetch(`${baseUrl}${path}`, {
       ...options,
@@ -50,12 +56,24 @@ test("Admin Comprehensive CRUD & RBAC Verification (TDD)", async (t) => {
     return { status: res.status, body };
   }
 
-  // 1. RBAC Check: Customer cannot access Admin endpoints
+  // 1. RBAC Check: Customer cannot access Admin endpoints, Staff can access CRUD but blocked on users
   await t.test("1. Non-admin users are strictly blocked with 403 Forbidden", async () => {
-    const res = await fetch(`${baseUrl}/api/admin/plants`, {
+    const resCustomer = await fetch(`${baseUrl}/api/admin/plants`, {
       headers: { Authorization: `Bearer ${customerToken}` },
     });
-    assert.strictEqual(res.status, 403);
+    assert.strictEqual(resCustomer.status, 403);
+
+    // Staff CAN access plants
+    const resStaffPlants = await fetch(`${baseUrl}/api/admin/plants`, {
+      headers: { Authorization: `Bearer ${staffToken}` },
+    });
+    assert.strictEqual(resStaffPlants.status, 200);
+
+    // Staff CANNOT access users management (Admin only)
+    const resStaffUsers = await fetch(`${baseUrl}/api/admin/users`, {
+      headers: { Authorization: `Bearer ${staffToken}` },
+    });
+    assert.strictEqual(resStaffUsers.status, 403);
   });
 
   // 2. Plants CRUD

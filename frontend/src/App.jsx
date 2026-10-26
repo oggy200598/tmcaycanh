@@ -15,7 +15,6 @@ import RecommendationsPage from './pages/RecommendationsPage';
 import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
-import SupplierPortalPage from './pages/SupplierPortalPage';
 import AdminPortalPage from './pages/AdminPortalPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -74,14 +73,10 @@ function App() {
                     }
                   />
 
-                  {/* Supplier Portal */}
+                  {/* Supplier Portal -> Redirect to Admin Portal */}
                   <Route
                     path="/supplier"
-                    element={
-                      <ProtectedRoute allowedRoles={['Supplier']}>
-                        <SupplierPortalPage />
-                      </ProtectedRoute>
-                    }
+                    element={<Navigate to="/admin" replace />}
                   />
 
                   {/* Admin & Staff Portal */}

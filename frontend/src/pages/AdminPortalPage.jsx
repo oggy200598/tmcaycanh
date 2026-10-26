@@ -69,8 +69,12 @@ export default function AdminPortalPage() {
   // Uploading state
   const [uploadingPlantImg, setUploadingPlantImg] = useState(false);
 
+  // Pagination states for all tabular tabs
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
-    if (user?.vaiTro === "Admin") {
+    if (user?.vaiTro === "Admin" || user?.vaiTro === "Staff") {
       loadInitialData();
     }
   }, [user]);
@@ -78,16 +82,21 @@ export default function AdminPortalPage() {
   async function loadInitialData() {
     try {
       setLoading(true);
-      const [statsRes, heatRes, usersRes, catRes] = await Promise.all([
+      const calls = [
         api.get("/admin/dashboard"),
         api.get("/admin/heatmap"),
-        api.get("/admin/users"),
         api.get("/admin/categories"),
-      ]);
+      ];
+      if (user?.vaiTro === "Admin") {
+        calls.push(api.get("/admin/users"));
+      }
+      const [statsRes, heatRes, catRes, usersRes] = await Promise.all(calls);
       setStats(statsRes.data?.data);
       setHeatmapData(heatRes.data?.data || []);
-      setUsersList(usersRes.data?.data || []);
       setCategoriesList(catRes.data?.data || []);
+      if (usersRes) {
+        setUsersList(usersRes.data?.data || []);
+      }
       // Load first active tab data
       loadTabData(activeTab);
     } catch (err) {
@@ -131,6 +140,9 @@ export default function AdminPortalPage() {
       } else if (tabKey === "orders") {
         const res = await api.get("/admin/orders");
         setOrdersList(res.data?.data || []);
+      } else if (tabKey === "users" && user?.vaiTro === "Admin") {
+        const res = await api.get("/admin/users");
+        setUsersList(res.data?.data || []);
       }
     } catch (err) {
       console.error(`Error loading data for ${tabKey}:`, err);
@@ -139,6 +151,7 @@ export default function AdminPortalPage() {
 
   const handleTabChange = (key) => {
     setActiveTab(key);
+    setCurrentPage(1);
     loadTabData(key);
   };
 
@@ -361,18 +374,18 @@ export default function AdminPortalPage() {
     }
   };
 
-  // Non-admin block
-  if (!user || user.vaiTro !== "Admin") {
+  // Non-admin/staff block
+  if (!user || (user.vaiTro !== "Admin" && user.vaiTro !== "Staff")) {
     return (
       <div className="container" style={{ padding: "6rem 1rem", textAlign: "center" }}>
         <div style={{ maxWidth: "560px", margin: "0 auto", backgroundColor: "#fff1f2", border: "1px solid #fecdd3", borderRadius: "var(--radius-xl)", padding: "2.5rem", boxShadow: "var(--shadow-md)" }}>
           <AlertCircle size={48} color="#e11d48" style={{ marginBottom: "1rem" }} />
           <h2 style={{ color: "#9f1239", marginBottom: "0.5rem" }}>Giới Hạn Quyền Quản Trị Hệ Thống</h2>
           <p style={{ color: "#881337", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "1.5rem" }}>
-            Trang này và toàn bộ tính năng <strong>CRUD (Thêm, Sửa, Xóa Cây cảnh, Nhà cung cấp, Vườn ươm, Danh mục)</strong> chỉ được phép truy cập bởi tài khoản có vai trò <strong>Admin</strong>.
+            Trang này chỉ được phép truy cập bởi tài khoản có vai trò <strong>Admin</strong> hoặc <strong>Staff</strong>.
           </p>
           <a href="/login" className="btn btn-primary" style={{ display: "inline-flex" }}>
-            Đăng Nhập Với Tài Khoản Admin Demo
+            Đăng Nhập Với Tài Khoản Quản Trị Demo
           </a>
         </div>
       </div>
@@ -387,14 +400,16 @@ export default function AdminPortalPage() {
     );
   }
 
-  // Filtered Plants
+  // Filtered & Paginated Plants
   const filteredPlants = plantsList.filter((p) => {
     const matchSearch = p.tenCay?.toLowerCase().includes(plantSearch.toLowerCase()) || p.maCay?.toLowerCase().includes(plantSearch.toLowerCase());
     const matchCat = plantCatFilter ? p.maDanhMuc === plantCatFilter : true;
     return matchSearch && matchCat;
   });
+  const plantsTotalPages = Math.ceil(filteredPlants.length / itemsPerPage) || 1;
+  const paginatedPlants = filteredPlants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Filtered Inventory
+  // Filtered & Paginated Inventory
   const filteredInventory = inventoryList.filter((inv) => {
     const matchSearch =
       inv.tenCay?.toLowerCase().includes(inventorySearch.toLowerCase()) ||
@@ -404,13 +419,88 @@ export default function AdminPortalPage() {
     const matchNurs = inventoryNurseryFilter ? inv.maVuonUom === inventoryNurseryFilter : true;
     return matchSearch && matchNurs;
   });
+  const inventoryTotalPages = Math.ceil(filteredInventory.length / itemsPerPage) || 1;
+  const paginatedInventory = filteredInventory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Filtered Orders
+  // Filtered & Paginated Orders
   const filteredOrders = ordersList.filter((o) => {
     const matchId = o.maDonHang?.toLowerCase().includes(orderSearch.toLowerCase());
     const matchName = o.tenKhachHang?.toLowerCase().includes(orderSearch.toLowerCase());
     return matchId || matchName;
   });
+  const ordersTotalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Paginated Users
+  const usersTotalPages = Math.ceil(usersList.length / itemsPerPage) || 1;
+  const paginatedUsers = usersList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Pagination Control Component
+  const renderPagination = (totalPages, totalCount) => {
+    if (totalPages <= 1) return null;
+    return (
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "1rem",
+        marginTop: "1.25rem",
+        padding: "0.75rem 1rem",
+        backgroundColor: "#ffffff",
+        borderRadius: "var(--radius-lg)",
+        border: "1px solid var(--border-light)"
+      }}>
+        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          Hiển thị <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong>{Math.min(currentPage * itemsPerPage, totalCount)}</strong> trong tổng số <strong>{totalCount}</strong> mục
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="btn btn-secondary btn-sm"
+            style={{ padding: "0.3rem 0.6rem", opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
+          >
+            ← Trước
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+            .map((p, idx, arr) => {
+              const showEllipsis = idx > 0 && p - arr[idx - 1] > 1;
+              return (
+                <React.Fragment key={p}>
+                  {showEllipsis && <span style={{ padding: "0 4px", color: "var(--text-muted)" }}>...</span>}
+                  <button
+                    onClick={() => setCurrentPage(p)}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "6px",
+                      border: currentPage === p ? "none" : "1px solid var(--border-light)",
+                      backgroundColor: currentPage === p ? "var(--primary-700)" : "#ffffff",
+                      color: currentPage === p ? "#ffffff" : "var(--text-main)",
+                      fontWeight: currentPage === p ? 700 : 500,
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {p}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="btn btn-secondary btn-sm"
+            style={{ padding: "0.3rem 0.6rem", opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
+          >
+            Sau →
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "5rem" }}>
@@ -465,15 +555,17 @@ export default function AdminPortalPage() {
           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Cần kiểm tra tham số sinh trưởng</div>
         </div>
 
-        <div className="card" style={{ padding: "1.25rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700 }}>
-            <span>NGƯỜI DÙNG HỆ THỐNG</span>
-            <Users size={18} color="#8b5cf6" />
+        {user?.vaiTro === "Admin" && (
+          <div className="card" style={{ padding: "1.25rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700 }}>
+              <span>NGƯỜI DÙNG HỆ THỐNG</span>
+              <Users size={18} color="#8b5cf6" />
+            </div>
+            <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--primary-900)", marginTop: "0.5rem" }}>
+              {stats?.tongNguoiDung || 0} tài khoản
+            </div>
           </div>
-          <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--primary-900)", marginTop: "0.5rem" }}>
-            {stats?.tongNguoiDung || 0} tài khoản
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Tabs Header */}
@@ -487,8 +579,8 @@ export default function AdminPortalPage() {
           { key: "nurseries", label: "📍 Vườn Ươm (CRUD)", count: nurseriesList.length },
           { key: "categories", label: "🏷️ Danh Mục (CRUD)", count: categoriesList.length },
           { key: "inventory", label: "📦 Tồn Kho (CRUD)", count: inventoryList.length, highlight: true },
-          { key: "orders", label: "📋 Đơn Hàng (Chỉ Xem)", count: ordersList.length },
-          { key: "users", label: "👥 Người Dùng", count: usersList.length },
+          { key: "orders", label: "📋 Đơn Hàng ", count: ordersList.length },
+          ...(user?.vaiTro === "Admin" ? [{ key: "users", label: "👥 Người Dùng", count: usersList.length }] : []),
         ].map((tab) => (
           <button
             key={tab.key}
@@ -649,7 +741,7 @@ export default function AdminPortalPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPlants.map((p) => (
+                {paginatedPlants.map((p) => (
                   <tr key={p.maCay} style={{ borderBottom: "1px solid var(--border-light)" }}>
                     <td style={{ padding: "0.75rem" }}>
                       <img
@@ -722,6 +814,7 @@ export default function AdminPortalPage() {
               </tbody>
             </table>
           </div>
+          {renderPagination(plantsTotalPages, filteredPlants.length)}
         </div>
       )}
 
@@ -991,7 +1084,7 @@ export default function AdminPortalPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((o) => (
+                {paginatedOrders.map((o) => (
                   <tr key={o.maDonHang} style={{ borderBottom: "1px solid var(--border-light)" }}>
                     <td style={{ padding: "0.75rem", fontWeight: 700, color: "var(--primary-800)" }}>{o.maDonHang}</td>
                     <td style={{ padding: "0.75rem", color: "var(--text-muted)" }}>
@@ -1047,6 +1140,7 @@ export default function AdminPortalPage() {
               </tbody>
             </table>
           </div>
+          {renderPagination(ordersTotalPages, filteredOrders.length)}
         </div>
       )}
 
@@ -1088,7 +1182,7 @@ export default function AdminPortalPage() {
               </tr>
             </thead>
             <tbody>
-              {usersList.map((u) => (
+              {paginatedUsers.map((u) => (
                 <tr key={u.maNguoiDung} style={{ borderBottom: "1px solid var(--border-light)" }}>
                   <td style={{ padding: "0.75rem", fontWeight: 700, color: "var(--primary-900)" }}>{u.hoTen || "---"}</td>
                   <td style={{ padding: "0.75rem" }}>
@@ -1128,6 +1222,7 @@ export default function AdminPortalPage() {
               ))}
             </tbody>
           </table>
+          {renderPagination(usersTotalPages, usersList.length)}
         </div>
       )}
 
@@ -1286,7 +1381,7 @@ export default function AdminPortalPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredInventory.map((inv) => (
+                {paginatedInventory.map((inv) => (
                   <tr key={inv.maTonKho} style={{ borderBottom: "1px solid var(--border-light)" }}>
                     <td style={{ padding: "0.75rem", fontWeight: 700, color: "var(--text-muted)" }}>{inv.maTonKho}</td>
                     <td style={{ padding: "0.75rem" }}>
@@ -1337,6 +1432,7 @@ export default function AdminPortalPage() {
               </tbody>
             </table>
           </div>
+          {renderPagination(inventoryTotalPages, filteredInventory.length)}
         </div>
       )}
 

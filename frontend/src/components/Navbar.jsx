@@ -245,44 +245,6 @@ export default function Navbar() {
             <Sparkles size={16} />
             Hợp Thổ Nhưỡng
           </Link>
-
-          {/* Supplier Portal Link */}
-          {isSupplier && (
-            <Link
-              to="/supplier"
-              style={{
-                padding: '0.5rem 0.85rem',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                backgroundColor: isActive('/supplier') ? 'var(--primary-50)' : 'transparent',
-                color: isActive('/supplier') ? 'var(--primary-700)' : 'var(--primary-800)',
-              }}
-            >
-              Cổng Vườn Ươm
-            </Link>
-          )}
-
-          {/* Admin / Staff Link */}
-          {isStaff && (
-            <Link
-              to="/admin"
-              style={{
-                padding: '0.5rem 0.85rem',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                backgroundColor: isActive('/admin') ? 'var(--primary-50)' : 'transparent',
-                color: isActive('/admin') ? 'var(--primary-700)' : 'var(--text-secondary)',
-              }}
-            >
-              <ShieldCheck size={16} />
-              Quản Trị {isAdmin ? 'Admin' : 'Staff'}
-            </Link>
-          )}
         </nav>
 
         {/* Right Actions: Cart & User */}
@@ -394,23 +356,6 @@ export default function Navbar() {
                   >
                     📦 Đơn hàng của tôi
                   </Link>
-
-                  {isSupplier && (
-                    <Link
-                      to="/supplier"
-                      onClick={() => setShowUserMenu(false)}
-                      style={{
-                        display: 'block',
-                        padding: '0.6rem 1rem',
-                        fontSize: '0.85rem',
-                        fontWeight: 500,
-                        color: 'var(--text-main)',
-                        borderBottom: '1px solid var(--border-light)',
-                      }}
-                    >
-                      🌱 Quản lý Vườn ươm
-                    </Link>
-                  )}
 
                   {isStaff && (
                     <Link

@@ -11,6 +11,7 @@
 - **Frontend:** React (Vite), Axios, Leaflet/Mapbox/OpenLayers (Bản đồ tương tác GIS), Vanilla CSS/CSS Modules (tuân thủ Rich Aesthetics, Responsive).
 - **Backend:** Node.js, Express REST API, PostgreSQL (sử dụng PostGIS / pg driver).
 - **Database:** PostgreSQL (Hệ cơ sở dữ liệu quan hệ 12 bảng chuẩn hóa).
+- **Khởi động dự án đồng thời (1 lệnh duy nhất):** Tại thư mục gốc `tmcaycanh`, chạy `npm run dev` để chạy song song cả Backend (cổng 5000) và Frontend (Vite cổng 5173) thông qua `concurrently`.
 - **Spatial Engine:** Tính toán khoảng cách (Haversine/GIS ST_Distance), lọc bán kính (Spatial Radius Query), đối chiếu khí hậu/thổ nhưỡng (Spatial Matching Engine).
 
 ---
@@ -302,8 +303,8 @@ tmcaycanh/
     4. Form gửi đánh giá và nhận xét sản phẩm của Khách hàng.
   - Có giao diện xem trước ảnh (preview), hiển thị tên tệp và nút xóa/đổi ảnh trực quan.
 - **Chuẩn hóa ảnh cây cảnh sinh thái & danh mục:**
-  - 100% cây cảnh dùng ảnh thực tế đúng loài (thay ảnh Tùng thơm sang cây lá kim thực tế thay vì bảng trang điểm; ảnh Bonsai thật; phân tách ảnh từng giống sen đá Sedum, Bắp cải, Hồng đen, Rubi,...).
-  - Bổ sung 22 giống cây vào 5 danh mục từng để trống ("Cây cảnh sân vườn", "Cây phong thủy", "Cây bonsai", "Cây hoa trang trí", "Chậu cây làm quà"), bảo đảm 12/12 danh mục đều có sản phẩm hoạt động.
+  - 100% cây cảnh dùng ảnh thực tế đúng loài (thay ảnh Tùng thơm sang cây lá kim thực tế thay vì bảng trang điểm; ảnh Bonsai thật gồm từng giống Tùng La Hán, Mai Vàng, Linh Sam, Si Cổ riêng biệt; phân tách ảnh từng giống sen đá Sedum, Bắp cải, Hồng đen, Rubi,...).
+  - Toàn bộ 343 bản ghi `taptintruyenthong` và 183 cây cảnh đã được kiểm tra khớp 100% với các tệp ảnh thực tế trên đĩa `frontend/public/assets/images/`. Dữ liệu đã ổn định hoàn toàn và các script nhập liệu/sửa dữ liệu tạm thời (`seed.js`, `import-data-sql.js`, `fix-*.js`) đã được dọn dẹp sạch sẽ khỏi thư mục `backend`.
 
 ### 9.3. Toàn bộ Endpoint RESTful Backend đã hoàn thiện
 
@@ -330,29 +331,31 @@ tmcaycanh/
   - `POST /`: Gửi đánh giá cho đơn hàng `DaHoanThanh` () kèm ảnh thực tế, tự động tính lại điểm uy tín NCC ().
 - **Upload (`/api/upload`):**
   - `POST /`: Nhận ảnh từ thiết bị, lưu vào `frontend/public/assets/images/`, trả về đường dẫn `/assets/images/...`.
-- **Admin & Giám Sát (`/api/admin` - Yêu cầu role = 'Admin'):**
-  - `GET /dashboard`: Tổng quan tài chính, đơn hàng, người dùng, cảnh báo tồn kho tối thiểu ().
-  - `GET /heatmap`: Dữ liệu bản đồ nhiệt Heatmap GIS đơn hàng hoàn thành ().
-  - `GET /users`, `PATCH /users/:id/status`: Quản lý và khóa/mở khóa tài khoản.
-  - **Quản lý Cây Cảnh (CRUD):** `GET /plants`, `POST /plants`, `PUT /plants/:id`, `DELETE /plants/:id`.
-  - **Quản lý Nhà Cung Cấp (CRUD):** `GET /suppliers`, `POST /suppliers`, `PUT /suppliers/:id`, `DELETE /suppliers/:id`.
-  - **Quản lý Vườn Ươm (CRUD):** `GET /nurseries`, `POST /nurseries`, `PUT /nurseries/:id`, `DELETE /nurseries/:id`.
-  - **Quản lý Danh Mục (CRUD):** `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id`.
-  - **Quản lý Tồn Kho (CRUD):** `GET /inventory`, `POST /inventory`, `PUT /inventory/:id`, `DELETE /inventory/:id`.
+- **Admin & Giám Sát (`/api/admin` - RBAC: Admin & Staff):**
+  - `GET /dashboard`: Tổng quan tài chính, đơn hàng, người dùng, cảnh báo tồn kho tối thiểu.
+  - `GET /heatmap`: Dữ liệu bản đồ nhiệt Heatmap GIS đơn hàng hoàn thành.
+  - `GET /users`, `PATCH /users/:id/status`: Quản lý và khóa/mở khóa tài khoản (Chỉ dành riêng cho role `Admin`, tài khoản `Staff` bị chặn 403 Forbidden).
+  - **Quản lý Cây Cảnh (CRUD - Admin & Staff):** `GET /plants`, `POST /plants`, `PUT /plants/:id`, `DELETE /plants/:id`.
+  - **Quản lý Nhà Cung Cấp (CRUD - Admin & Staff):** `GET /suppliers`, `POST /suppliers`, `PUT /suppliers/:id`, `DELETE /suppliers/:id`.
+  - **Quản lý Vườn Ươm (CRUD - Admin & Staff):** `GET /nurseries`, `POST /nurseries`, `PUT /nurseries/:id`, `DELETE /nurseries/:id`.
+  - **Quản lý Danh Mục (CRUD - Admin & Staff):** `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id`.
+  - **Quản lý Tồn Kho (CRUD - Admin & Staff):** `GET /inventory`, `POST /inventory`, `PUT /inventory/:id`, `DELETE /inventory/:id`.
   - **Xem Đơn Hàng (Chỉ đọc - Strictly Read-Only):** `GET /orders`, `GET /orders/:id`. Tuyệt đối không cho phép Sửa hoặc Xóa đơn hàng từ Admin Portal.
 
 ### 9.4. Giao diện Frontend (React / Vite / Leaflet) đã hoàn thiện
 
+- `Navbar`: Tinh gọn thanh header, loại bỏ các nút quản trị direct trên menu chính. Nút "🛡️ Trang Quản Trị" được chuyển gọn gàng vào trong dropdown tài khoản người dùng (hiển thị khi tài khoản có vai trò `Admin` hoặc `Staff`).
 - `HomePage`: Hero banner thực vật sang trọng, bộ chọn tọa độ và đối chiếu thổ nhưỡng vùng miền, danh mục, cây nổi bật và preview bản đồ vườn ươm.
-- `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả (toàn bộ 12 danh mục có dữ liệu thực).
+- `ProductListPage`: Tìm kiếm đa tiêu chí, lọc theo bán kính GIS, điều kiện ánh sáng, giá cả. **Đã tích hợp phân trang (Pagination)** 9 sản phẩm/trang với bộ điều hướng số trang và Prev/Next mượt mà, tự động reset trang khi thay đổi bộ lọc.
 - `ProductDetailPage`: Thư viện ảnh đúng loài, bảng thông số sinh trưởng 1-1, đồng hồ đo độ phù hợp khí hậu, chọn vườn ươm gần nhất và danh sách đánh giá.
 - `MapExplorerPage`: Bản đồ tương tác Leaflet sử dụng Esri World Street tiles không dính watermark, hiển thị vòng tròn bán kính phủ sóng, chi tiết kho vườn ươm và ghim vị trí nhận hàng.
 - `RecommendationsPage`: Hệ thống gợi ý cây cảnh hợp thổ nhưỡng dựa trên bộ lọc khí hậu tương tác (Spatial Matching Engine).
 - `CartPage`: Giỏ hàng, bản đồ ghim vị trí nhận hàng, tính cước GIS và khóa tồn kho 15 phút.
-- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước (), ảnh kiểm định sức khỏe cây tại vườn (), bản đồ Live Tracking GPS (), form đánh giá 1-5 sao kèm upload ảnh thực tế ().
-- `SupplierPortalPage`: Quản lý đơn hàng, nút tải ảnh sức khỏe cây từ máy, cảnh báo tồn kho thấp (), thiết lập vườn ươm GIS (BR03), đăng bán cây mới có nút upload ảnh sản phẩm (, ).
+- `OrdersPage` & `OrderDetailPage`: Tiến trình tuyến tính Stepper 5 bước, ảnh kiểm định sức khỏe cây tại vườn, bản đồ Live Tracking GPS, form đánh giá 1-5 sao kèm upload ảnh thực tế.
 - `AdminPortalPage`: 
-  - Đăng nhập bảo mật nghiêm ngặt RBAC (chỉ tài khoản `vaiTro = 'Admin'` mới được thao tác).
+  - Đăng nhập bảo mật nghiêm ngặt RBAC (cho phép cả `Admin` và `Staff` quản trị sàn; riêng quyền quản lý người dùng `users` chỉ mở cho `Admin`).
+  - Đã tích hợp tính năng quản lý nhà cung cấp, vườn ươm và đăng bán cây thay thế hoàn toàn cho `SupplierPortalPage` (file cũ đã được gỡ bỏ khỏi project).
+  - **Tích hợp phân trang (Pagination)** 10 dòng/trang cho các bảng dữ liệu lớn: Cây Cảnh (`plants`), Tồn Kho (`inventory`), Đơn Hàng (`orders`), Người Dùng (`users`).
   - Tab **Cảnh Báo Tồn Kho Tối Thiểu**: Danh sách cây dưới ngưỡng quy định.
   - Tab **Bản Đồ Nhiệt Heatmap Đơn Hàng**: Biểu đồ không gian đơn hàng hoàn thành.
   - Tab **Kiểm Duyệt Cây Cảnh**: Phê duyệt (`Active`) hoặc Từ chối sản phẩm mới đăng bán.
@@ -360,16 +363,16 @@ tmcaycanh/
   - Tab **Nhà Cung Cấp**: Xem danh sách, Thêm NCC mới, Sửa thông tin liên hệ/MST/điểm uy tín, Xóa NCC.
   - Tab **Vườn Ươm**: Xem danh sách, Thêm vườn ươm (nhập tọa độ GIS vĩ độ/kinh độ, bán kính phục vụ), Sửa, Xóa vườn ươm.
   - Tab **Danh Mục**: Xem danh sách danh mục, Thêm danh mục mới, Sửa tên/mô tả, Xóa danh mục.
-  - Tab **Tồn Kho (CRUD)**: Quản lý số lượng tồn kho từng vườn ươm, Thêm bản ghi tồn kho mới (chọn cây, chọn vườn), Sửa số lượng tồn, Xóa bản ghi (chặn xóa nếu đang có hàng tạm giữ).
-  - Tab **Đơn Hàng (Chỉ Đọc)**: Xem toàn bộ danh sách đơn hàng toàn sàn, tìm kiếm theo mã đơn/khách hàng, xem chi tiết modal (danh sách cây, địa chỉ giao, ảnh kiểm định sức khỏe), TUYỆT ĐỐI không có nút Sửa hay Xóa.
-  - Tab **Quản Lý Người Dùng**: Danh sách người dùng, chức năng Khóa / Mở khóa tài khoản.
+  - Tab **Tồn Kho (CRUD)**: Quản lý số lượng tồn kho từng vườn ươm, Thêm bản ghi tồn kho mới, Sửa số lượng tồn, Xóa bản ghi.
+  - Tab **Đơn Hàng (Chỉ Đọc)**: Xem toàn bộ danh sách đơn hàng toàn sàn, tìm kiếm, xem chi tiết modal (danh sách cây, địa chỉ giao, ảnh kiểm định sức khỏe), TUYỆT ĐỐI không có nút Sửa hay Xóa.
+  - Tab **Quản Lý Người Dùng**: Danh sách người dùng, chức năng Khóa / Mở khóa tài khoản (chỉ `Admin` mới thấy tab này).
 - `LoginPage` & `RegisterPage`: Đăng nhập/đăng ký có nút đăng nhập nhanh 4 vai trò demo.
+- Gỡ bỏ `SupplierPortalPage.jsx` và điều hướng toàn bộ route `/supplier` về `/admin`.
 
 ### 9.5. Báo cáo Kết quả Kiểm thử TDD (32/32 Pass)
 
-- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn (Kết nối DB, 12 bảng nạp dữ liệu từ data.sql, quan hệ 1-1 CayCanh - YeuCauSinhTruong, tọa độ vườn ươm, phân quyền RBAC).
-- `backend/test/gis-service.test.js`: 5/5 test cases đạt chuẩn (Công thức khoảng cách Haversine, cước ship , thuật toán tương thích thổ nhưỡng , chu trình tuyến tính /).
-- `backend/test/api-flow.test.js`: 9/9 test cases đạt chuẩn (Healthcheck, JWT Login, truy vấn GIS, tạo đơn khóa tồn kho ACID , ngăn chặn nhảy cóc trạng thái đơn , kiểm tra bắt buộc ảnh sức khỏe , trừ tồn kho chính thức , Heatmap GIS ).
-- `backend/test/upload-service.test.js`: 4/4 test cases đạt chuẩn (Từ chối upload thiếu file, upload ảnh thành công lưu vào `frontend/public/assets/images`, trả về `/assets/images/...`, chặn upload không xác thực).
-- `backend/test/admin-crud.test.js`: 8/8 test cases đạt chuẩn (Chặn người dùng thường 403, Admin CRUD Cây Cảnh, Admin CRUD Nhà Cung Cấp, Admin CRUD Vườn Ươm, Admin CRUD Danh Mục, Admin CRUD Tồn Kho, Đơn hàng chỉ đọc - cấm PUT/DELETE).
-- `Browser Verification`: Đã chạy kiểm thử tự động trên trình duyệt thật qua `browser_subagent` và ghi lại video phiên làm việc hoàn tất tại `tmcaycanh_demo_1793029699740.webp`.
+- `backend/test/db-integrity.test.js`: 6/6 test cases đạt chuẩn.
+- `backend/test/gis-service.test.js`: 5/5 test cases đạt chuẩn.
+- `backend/test/api-flow.test.js`: 9/9 test cases đạt chuẩn.
+- `backend/test/upload-service.test.js`: 4/4 test cases đạt chuẩn.
+- `backend/test/admin-crud.test.js`: 8/8 test cases đạt chuẩn (Khách hàng bị chặn 403, Staff CRUD Cây Cảnh / NCC / Vườn Ươm / Tồn Kho thành công, Staff bị chặn 403 khi vào Users, Admin toàn quyền).

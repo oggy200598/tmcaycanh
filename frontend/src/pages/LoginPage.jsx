@@ -21,10 +21,8 @@ export default function LoginPage() {
       setErrorMsg('');
       const loggedUser = await login(tenDangNhap, matKhau);
 
-      if (loggedUser.vaiTro === 'Admin' || loggedUser.vaiTro === 'Staff') {
+      if (loggedUser.vaiTro === 'Admin' || loggedUser.vaiTro === 'Staff' || loggedUser.vaiTro === 'Supplier') {
         navigate('/admin');
-      } else if (loggedUser.vaiTro === 'Supplier') {
-        navigate('/supplier');
       } else {
         navigate(redirectPath);
       }

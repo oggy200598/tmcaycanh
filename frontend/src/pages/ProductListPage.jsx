@@ -58,6 +58,18 @@ export default function ProductListPage() {
     fetchFilteredPlants();
   }, [search, selectedCat, minPrice, maxPrice, sunlight, radiusKm, currentLocation]);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCat, minPrice, maxPrice, sunlight, radiusKm]);
+
+  const totalPages = Math.ceil(plants.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentPlants = plants.slice(startIndex, startIndex + itemsPerPage);
+
   const handleResetFilters = () => {
     setSearch('');
     setSelectedCat('');
@@ -66,6 +78,7 @@ export default function ProductListPage() {
     setSunlight('');
     setRadiusKm('');
     setSearchParams({});
+    setCurrentPage(1);
   };
 
   return (
@@ -82,7 +95,7 @@ export default function ProductListPage() {
         </div>
 
         <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-700)' }}>
-          Tìm thấy <strong>{plants.length}</strong> sản phẩm phù hợp
+          Tìm thấy <strong>{plants.length}</strong> sản phẩm phù hợp (Trang {currentPage}/{totalPages})
         </div>
       </div>
 
@@ -231,11 +244,75 @@ export default function ProductListPage() {
               </button>
             </div>
           ) : (
-            <div className="grid-cols-3">
-              {plants.map((plant) => (
-                <ProductCard key={plant.maCay} plant={plant} />
-              ))}
-            </div>
+            <>
+              <div className="grid-cols-3">
+                {currentPlants.map((plant) => (
+                  <ProductCard key={plant.maCay} plant={plant} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginTop: '2.5rem',
+                  paddingTop: '1.5rem',
+                  borderTop: '1px solid var(--border-light)',
+                }}>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: '0.4rem 0.8rem', opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                  >
+                    ← Trước
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                    .map((p, idx, arr) => {
+                      const showEllipsis = idx > 0 && p - arr[idx - 1] > 1;
+                      return (
+                        <React.Fragment key={p}>
+                          {showEllipsis && <span style={{ padding: '0 4px', color: 'var(--text-muted)' }}>...</span>}
+                          <button
+                            onClick={() => setCurrentPage(p)}
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '8px',
+                              border: currentPage === p ? 'none' : '1px solid var(--border-light)',
+                              backgroundColor: currentPage === p ? 'var(--primary-700)' : '#ffffff',
+                              color: currentPage === p ? '#ffffff' : 'var(--text-main)',
+                              fontWeight: currentPage === p ? 700 : 500,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.85rem',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {p}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: '0.4rem 0.8rem', opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                  >
+                    Sau →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
